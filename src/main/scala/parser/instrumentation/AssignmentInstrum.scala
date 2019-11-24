@@ -6,8 +6,7 @@ import parser.utils.{Attribute, Binding, utils}
 import parser.visitors.ExpressionStatementVisitor
 import scala.collection.JavaConverters._
 
-class AssignmentInstrum(val cu: CompilationUnit) {
-  private[this] val rewriter = ASTRewrite.create(cu.getAST)
+class AssignmentInstrum(val cu: CompilationUnit, rewriter: ASTRewrite) {
   private[this] var attributes: List[Attribute] = List()
 
   def startInstrum(): ASTRewrite ={

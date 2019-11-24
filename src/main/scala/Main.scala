@@ -1,40 +1,31 @@
 import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
+import parser.converters.{DoStatementCon, ForStatementCon, WhileStatementCon}
 import parser.instrumentation.AssignmentInstrum
 import parser.utils.{ASTParserLocal, FileWriter}
 
-class ForStatementVisitor extends ASTVisitor {
-  var nodes:List[ForStatement] = List.empty
-  override def visit(node: ForStatement): Boolean = {
-    nodes = nodes.+:(node)
-    super.visit(node)
-  }
-
-  def getAllFor():List[ForStatement] = nodes
-}
-
-//import java.util
-//
-//class ForStmt extends ASTVisitor {
-//  val forst1 = new util.ArrayList[ForStmt]
-//
-//  override def visit(node: ForStmt): Boolean = {
-//    forst1.add(node)
-//    super.visit(node)
-//  }
-//
-//  def getForst1: Nothing = forst1
-//}
-
-
 object Main extends App {
-  val fileName = "/media/01D3908E9C0056A0/code/eclipse-workspace/cs474.test/src/cs474/test/Test.java"
+  if (args.length < 3){
+    println("Please pass source file, sources path and output file")
+  }
+  val fileName = args(0)
+  val sources = args(1)
+  val outputFile = args(2)
+
   val astParser: ASTParserLocal = new ASTParserLocal
-  val cu: CompilationUnit = astParser.getCU("/media/01D3908E9C0056A0/code/eclipse-workspace/cs474.test/src",
+  val cu: CompilationUnit = astParser.getCU(sources,
     "/usr/bin/java/lib/rt.jar",
     fileName)
-  val rewriter: ASTRewrite = new AssignmentInstrum(cu).startInstrum()
-  FileWriter.writeFile(rewriter, fileName)
-//  val ap = new AP("","adf", 100)
-//  println(ap)
+  val rewriter: ASTRewrite = ASTRewrite.create(cu.getAST)
+  val whileRewriter = new WhileStatementCon(cu, rewriter).startBlockConvert()
+  val doRewriter = new DoStatementCon(cu, whileRewriter).startBlockConvert()
+  val forRewriter = new ForStatementCon(cu, doRewriter).startBlockConvert()
+  FileWriter.writeFile(forRewriter, fileName,outputFile)
+
+  val cu1: CompilationUnit = astParser.getCU(sources,
+    "/usr/bin/java/lib/rt.jar",
+    outputFile)
+  val newRewriter = ASTRewrite.create(cu1.getAST)
+  val assignmentRewriter = new AssignmentInstrum(cu1,newRewriter).startInstrum()
+  FileWriter.writeFile(assignmentRewriter, outputFile,outputFile+"1")
 }
