@@ -44,7 +44,7 @@ class AssignmentInstrum(val cu: CompilationUnit, rewriter: ASTRewrite) {
     var log = ""
     if(attributes.length > 0) {
       log = "TemplateClass.instrum(" + cu.getLineNumber(expressionStatement.getStartPosition)
-      log += ", " + "\"Assign\""
+      log += ", " + utils.wrapStringInQuotes(getTextForExpression(expressionStatement.getExpression))
       attributes.map(attribute => {
         log += ", new AP("+ utils.wrapStringInQuotes(attribute.expType) + ", " + attribute.binding + ", " + attribute.variable + ")"
       }).mkString(", ")
@@ -58,16 +58,16 @@ class AssignmentInstrum(val cu: CompilationUnit, rewriter: ASTRewrite) {
 
   def recurseExpression(expression: Expression): Unit = {
     expression match {
-      case _ :ArrayCreation => {}
-      case _ :ArrayInitializer => {}
-      case x :Assignment => {
+      case _: ArrayCreation => {}
+      case _: ArrayInitializer => {}
+      case x: Assignment => {
         val assignment = expression.asInstanceOf[Assignment]
         recurseExpression(assignment.getLeftHandSide)
         recurseExpression(assignment.getRightHandSide)
       }
-      case _ :ClassInstanceCreation => {}
-      case _ :ConditionalExpression => {}
-      case x :FieldAccess => {
+      case _: ClassInstanceCreation => {}
+      case _: ConditionalExpression => {}
+      case x: FieldAccess => {
         println(x.getExpression)
         println(x.getName)
         val (binding, declaringMethod) = Binding.getBindingLabel(x.getName.resolveBinding())
@@ -75,8 +75,8 @@ class AssignmentInstrum(val cu: CompilationUnit, rewriter: ASTRewrite) {
         attributes = attributes :+ new Attribute("SimpleName", utils.wrapStringInQuotes(binding),
           List(x.getExpression, x.getName.getFullyQualifiedName).mkString("."))
       }
-      case _ :InfixExpression => {}
-      case _ :MethodInvocation => {
+      case _: InfixExpression => {}
+      case _: MethodInvocation => {
         var qualifiedName = new String
         val methodInvocation = expression.asInstanceOf[MethodInvocation]
         if (methodInvocation.getExpression.isInstanceOf[QualifiedName])
@@ -85,97 +85,67 @@ class AssignmentInstrum(val cu: CompilationUnit, rewriter: ASTRewrite) {
           qualifiedName = methodInvocation.getExpression.asInstanceOf[SimpleName].getFullyQualifiedName + "."
 
         val (binding, methodSignature) = Binding.getBindingLabel(methodInvocation.resolveMethodBinding())
-        attributes = attributes:+ new Attribute("MethodInvocation", utils.wrapStringInQuotes(binding), utils.wrapStringInQuotes(methodSignature))
+        attributes = attributes :+ new Attribute("MethodInvocation", utils.wrapStringInQuotes(binding), utils.wrapStringInQuotes(methodSignature))
         val args = methodInvocation.arguments().asScala.toList
-        args.foreach(x=>recurseExpression(x.asInstanceOf[Expression]))
+        args.foreach(x => recurseExpression(x.asInstanceOf[Expression]))
       }
-      case _ :ParenthesizedExpression => {}
-      case _ :MethodReference => {}
-      case _ :SimpleName => {
+      case _: ParenthesizedExpression => {}
+      case _: MethodReference => {}
+      case _: SimpleName => {
         val simpleName: SimpleName = expression.asInstanceOf[SimpleName]
         val test = simpleName.toString
         val (binding, declaringMethod) = Binding.getBindingLabel(simpleName.resolveBinding())
         val sdf = expression.asInstanceOf[SimpleName].getFullyQualifiedName
         attributes = attributes :+ new Attribute("SimpleName", utils.wrapStringInQuotes(binding), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
       }
-      case _ :PostfixExpression => {}
-      case _ :PrefixExpression => {}
-      case x :QualifiedName => {
+      case _: PostfixExpression => {}
+      case _: PrefixExpression => {}
+      case x: QualifiedName => {
         val (binding, declaringMethod) = Binding.getBindingLabel(x.getName.resolveBinding())
         val sdf = x.getName.getFullyQualifiedName
         attributes = attributes :+ new Attribute("QualifiedName", utils.wrapStringInQuotes(binding),
           List(x.getQualifier.getFullyQualifiedName, x.getName.getFullyQualifiedName).mkString("."))
       }
-      case _ :SuperMethodInvocation => {}
-      case _ :SuperMethodReference => {}
-      case _ :ThisExpression => {}
-      case _ :TypeMethodReference => {}
-      case _ :VariableDeclarationExpression => {}
-      case x : NumberLiteral => {
+      case _: SuperMethodInvocation => {}
+      case _: SuperMethodReference => {}
+      case _: ThisExpression => {}
+      case _: TypeMethodReference => {}
+      case _: VariableDeclarationExpression => {}
+      case x: NumberLiteral => {
         attributes = attributes :+ new Attribute("NumberLiteral", utils.wrapStringInQuotes(""), x.getToken)
       }
-      case _ : NullLiteral => attributes = attributes :+ new Attribute("NullLiteral", utils.wrapStringInQuotes(""), "null")
-      case _  => {}
+      case _: NullLiteral => attributes = attributes :+ new Attribute("NullLiteral", utils.wrapStringInQuotes(""), "null")
+      case _ => {}
 
     }
-    //    if (expression.isInstanceOf[ArrayAccess]) {
-    //    }
-    //    else if (expression.isInstanceOf[ArrayCreation]) {
-    //    }
-    //    else if (expression.isInstanceOf[ArrayCreation]) {
-    //    }
-    //    else if (expression.isInstanceOf[ArrayInitializer]) {
-    //    }
-    //    else if (expression.isInstanceOf[Assignment]) {
-    //    }
-    //    else if (expression.isInstanceOf[ClassInstanceCreation]) {
-    //    }
-    //    else if (expression.isInstanceOf[ConditionalExpression]) {
-    //    }
-    //    else if (expression.isInstanceOf[FieldAccess]) if (expression.asInstanceOf[FieldAccess].getExpression.isInstanceOf[ThisExpression]) System.out.println((expression.asInstanceOf[FieldAccess]).getExpression.asInstanceOf[ThisExpression].getQualifier)
-    //    else if (expression.isInstanceOf[InfixExpression]) {
-    //      val lhs = expression.asInstanceOf[InfixExpression].getLeftOperand
-    //      recurseExpression(lhs)
-    //      val rhs = expression.asInstanceOf[InfixExpression].getRightOperand
-    //      recurseExpression(rhs)
-    //    }
-    //    else if (expression.isInstanceOf[NumberLiteral])
-    //      attributes:+ new Attribute("", "NumberLiteral", expression.resolveConstantExpressionValue.toString)
-    ////    else if (expression.isInstanceOf[InstanceofExpression]) {
-    ////    }
-    ////    else if (expression.isInstanceOf[LambdaExpression]) {
-    ////    }
-    //    else if (expression.isInstanceOf[MethodInvocation]) {
-    //      var qualifiedName = new String
-    //      val methodInvocation = expression.asInstanceOf[MethodInvocation]
-    //      if (methodInvocation.getExpression.isInstanceOf[QualifiedName]) qualifiedName = methodInvocation.getExpression.asInstanceOf[QualifiedName].getFullyQualifiedName + "."
-    //      attributes:+(new Attribute("",", "\"" + qualifiedName + expression.asInstanceOf[MethodInvocation].getName.toString + "()" + "\""))
-    //      //getFullName(((MethodInvocation) expression).getExpression(), "");
-    //      System.out.println()
-    //      System.out.println()
-    //    }
-    //    else if (expression.isInstanceOf[ParenthesizedExpression]) recurseExpression(expression.asInstanceOf[ParenthesizedExpression].getExpression)
-    //    else if (expression.isInstanceOf[MethodReference]) {
-    //    }
-    //    else if (expression.isInstanceOf[SimpleName]) {
-    //      attributes:+(new Attribute((expression.asInstanceOf[SimpleName]).resolveBinding.asInstanceOf[IVariableBinding].getDeclaringMethod.getDeclaringClass.getQualifiedName, expression.asInstanceOf[SimpleName].getFullyQualifiedName))
-    //      System.out.println()
-    //    }
-    //    else if (expression.isInstanceOf[ParenthesizedExpression]) {
-    //    }
-    //    else if (expression.isInstanceOf[PostfixExpression]) {
-    //    }
-    //    else if (expression.isInstanceOf[PrefixExpression]) {
-    //    }
-    //    else if (expression.isInstanceOf[SuperMethodInvocation]) {
-    //    }
-    //    else if (expression.isInstanceOf[SuperMethodReference]) {
-    //    }
-    //    else if (expression.isInstanceOf[ThisExpression]) {
-    //    }
-    //    else if (expression.isInstanceOf[TypeMethodReference]) {
-    //    }
-    //    else if (expression.isInstanceOf[VariableDeclarationExpression]) {
-    //    }
+  }
+
+
+  def getTextForExpression(expression: Expression): String = {
+    expression match {
+      case _: ArrayCreation => ""
+      case _: ArrayInitializer => ""
+      case x: Assignment => "Assign"
+      case _: ClassInstanceCreation => ""
+      case _: ConditionalExpression => ""
+      case x: FieldAccess => ""
+      case _: InfixExpression => ""
+      case _: MethodInvocation => "MethodInvocation"
+      case _: ParenthesizedExpression => ""
+      case _: MethodReference => ""
+      case _: SimpleName => ""
+      case _: PostfixExpression => ""
+      case _: PrefixExpression => ""
+      case x: QualifiedName => ""
+      case _: SuperMethodInvocation => ""
+      case _: SuperMethodReference => ""
+      case _: ThisExpression => ""
+      case _: TypeMethodReference => ""
+      case _: VariableDeclarationExpression => ""
+      case x: NumberLiteral => ""
+      case _: NullLiteral => ""
+      case _ => ""
+
+    }
   }
 }
