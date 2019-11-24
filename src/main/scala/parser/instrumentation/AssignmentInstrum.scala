@@ -4,6 +4,7 @@ import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.utils.{Attribute, Binding, utils}
 import parser.visitors.ExpressionStatementVisitor
+import scala.collection.JavaConverters._
 
 class AssignmentInstrum(val cu: CompilationUnit) {
   private[this] val rewriter = ASTRewrite.create(cu.getAST)
@@ -18,7 +19,8 @@ class AssignmentInstrum(val cu: CompilationUnit) {
     val expressionStatementVisitor = new ExpressionStatementVisitor
     cu.accept(expressionStatementVisitor)
     val expressionStatemtemts = expressionStatementVisitor.getExpressionStatements
-    expressionStatemtemts.filter(_.getExpression.isInstanceOf[Assignment]).map(assignmentInstrumHelper(_))
+    //    expressionStatemtemts.filter(_.getExpression.isInstanceOf[Assignment]).map(assignmentInstrumHelper(_))
+    expressionStatemtemts.map(assignmentInstrumHelper(_))
   }
 
   def assignmentInstrumHelper(expressionStatement: ExpressionStatement) = {
@@ -35,19 +37,20 @@ class AssignmentInstrum(val cu: CompilationUnit) {
       else
         getParent(parent.getParent)
     }
-    val assignment = expressionStatement.getExpression.asInstanceOf[Assignment]
-    attributes = List()
-    val parent = getParent(assignment.getParent)
-    val immediateParent = getParent(assignment.getParent)
 
-    recurseExpression(assignment.getLeftHandSide)
-    recurseExpression(assignment.getRightHandSide)
-    var log = "TemplateClass.instrum(" + cu.getLineNumber(assignment.getStartPosition)
-    log += ", " + "\"Assign\""
-    for (attribute <- attributes) {
-      log += ", new AP(" + attribute.binding +", "+ attribute.variable + ")"
+    attributes = List()
+    val parent = getParent(expressionStatement.getParent)
+
+    recurseExpression(expressionStatement.getExpression)
+    var log = ""
+    if(attributes.length > 0) {
+      log = "TemplateClass.instrum(" + cu.getLineNumber(expressionStatement.getStartPosition)
+      log += ", " + "\"Assign\""
+      attributes.map(attribute => {
+        log += ", new AP("+ utils.wrapStringInQuotes(attribute.expType) + ", " + attribute.binding + ", " + attribute.variable + ")"
+      }).mkString(", ")
+      log += ");"
     }
-    log += ");"
     val siso = cu.getAST.newTextElement
     siso.setText(log)
     val lrw = rewriter.getListRewrite(parent, Block.STATEMENTS_PROPERTY)
@@ -58,13 +61,20 @@ class AssignmentInstrum(val cu: CompilationUnit) {
     expression match {
       case _ :ArrayCreation => {}
       case _ :ArrayInitializer => {}
-      case _ :Assignment => {}
+      case x :Assignment => {
+        val assignment = expression.asInstanceOf[Assignment]
+        recurseExpression(assignment.getLeftHandSide)
+        recurseExpression(assignment.getRightHandSide)
+      }
       case _ :ClassInstanceCreation => {}
       case _ :ConditionalExpression => {}
-      case _ :FieldAccess => {
-        if(expression.asInstanceOf[FieldAccess].getExpression.isInstanceOf[ThisExpression]){
-          println((expression.asInstanceOf[FieldAccess]).getExpression.asInstanceOf[ThisExpression].getQualifier)
-        }
+      case x :FieldAccess => {
+        println(x.getExpression)
+        println(x.getName)
+        val (binding, declaringMethod) = Binding.getBindingLabel(x.getName.resolveBinding())
+        val sdf = x.getName.getFullyQualifiedName
+        attributes = attributes :+ new Attribute("SimpleName", utils.wrapStringInQuotes(binding),
+          List(x.getExpression, x.getName.getFullyQualifiedName).mkString("."))
       }
       case _ :InfixExpression => {}
       case _ :MethodInvocation => {
@@ -77,6 +87,8 @@ class AssignmentInstrum(val cu: CompilationUnit) {
 
         val (binding, methodSignature) = Binding.getBindingLabel(methodInvocation.resolveMethodBinding())
         attributes = attributes:+ new Attribute("MethodInvocation", utils.wrapStringInQuotes(binding), utils.wrapStringInQuotes(methodSignature))
+        val args = methodInvocation.arguments().asScala.toList
+        args.foreach(x=>recurseExpression(x.asInstanceOf[Expression]))
       }
       case _ :ParenthesizedExpression => {}
       case _ :MethodReference => {}
@@ -86,16 +98,24 @@ class AssignmentInstrum(val cu: CompilationUnit) {
         val (binding, declaringMethod) = Binding.getBindingLabel(simpleName.resolveBinding())
         val sdf = expression.asInstanceOf[SimpleName].getFullyQualifiedName
         attributes = attributes :+ new Attribute("SimpleName", utils.wrapStringInQuotes(binding), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
-        println()
       }
       case _ :PostfixExpression => {}
       case _ :PrefixExpression => {}
-      case x :QualifiedName => recurseExpression(x.asInstanceOf[QualifiedName].getName)
+      case x :QualifiedName => {
+        val (binding, declaringMethod) = Binding.getBindingLabel(x.getName.resolveBinding())
+        val sdf = x.getName.getFullyQualifiedName
+        attributes = attributes :+ new Attribute("QualifiedName", utils.wrapStringInQuotes(binding),
+          List(x.getQualifier.getFullyQualifiedName, x.getName.getFullyQualifiedName).mkString("."))
+      }
       case _ :SuperMethodInvocation => {}
       case _ :SuperMethodReference => {}
       case _ :ThisExpression => {}
       case _ :TypeMethodReference => {}
       case _ :VariableDeclarationExpression => {}
+      case x : NumberLiteral => {
+        attributes = attributes :+ new Attribute("NumberLiteral", utils.wrapStringInQuotes(""), x.getToken)
+      }
+      case _ : NullLiteral => attributes = attributes :+ new Attribute("NullLiteral", utils.wrapStringInQuotes(""), "null")
       case _  => {}
 
     }
