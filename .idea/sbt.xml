@@ -6,8 +6,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="/media/01D3908E9C0056A0/code/IdeaProjects/cs474.cp_test" />
-            <option value="/media/01D3908E9C0056A0/code/IdeaProjects/cs474.cp_test/project" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/project" />
           </set>
         </option>
         <option name="sbtVersion" value="1.3.3" />

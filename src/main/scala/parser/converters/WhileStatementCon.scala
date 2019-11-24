@@ -19,8 +19,8 @@ import parser.visitors.WhileStatementVisitor
   * having only one method invocation on either side of operator
   * f() + f() < 10 won't be handled in current implementataion
   */
-class WhileStatementCon(val cu: CompilationUnit) {
-  private[this] val rewriter = ASTRewrite.create(cu.getAST)
+class WhileStatementCon(val cu: CompilationUnit,rewriter: ASTRewrite) {
+  //private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   def startBlockConvert(): ASTRewrite ={
     whileBlock()
@@ -51,7 +51,7 @@ class WhileStatementCon(val cu: CompilationUnit) {
         val (newVDS, fragmentSimpleName) = methodInvocationToVariableDeclarationStatement(operandMethod)
         rewriter.getListRewrite(parent, Block.STATEMENTS_PROPERTY).insertBefore(newVDS, whileStatement, null)
         rewriter.replace(operandMethod, fragmentSimpleName, null)
-        val newAssignment = methodInvocationToAssignment(operandMethod)
+        val newAssignment = methodInvocationToAssignment(operandMethod,fragmentSimpleName)
         val newWhileBody = whileToBody(whileBody)
         val lrw = rewriter.getListRewrite(newWhileBody, Block.STATEMENTS_PROPERTY)
         lrw.insertLast(whileStatement.getAST.newExpressionStatement(newAssignment), null)
@@ -60,7 +60,7 @@ class WhileStatementCon(val cu: CompilationUnit) {
     def methodInvocationToVariableDeclarationStatement(operand: MethodInvocation) = {
       val newMethodInvocation = rewriter.createCopyTarget(operand).asInstanceOf[MethodInvocation]
       val fragment = operand.getAST.newVariableDeclarationFragment
-      val fragmentSimpleName = operand.getAST.newSimpleName("con")
+      val fragmentSimpleName = operand.getAST.newSimpleName("wh"+WhileStatementCon.increment())
       fragment.setName(fragmentSimpleName)
       fragment.setInitializer(newMethodInvocation)
       val newVDS = operand.getAST.newVariableDeclarationStatement(fragment)
@@ -72,9 +72,9 @@ class WhileStatementCon(val cu: CompilationUnit) {
       (newVDS, fragmentSimpleName)
     }
 
-    def methodInvocationToAssignment(operand: MethodInvocation) = {
+    def methodInvocationToAssignment(operand: MethodInvocation,fragmentName:SimpleName) = {
       val newAssigment = whileStatement.getAST.newAssignment
-      newAssigment.setLeftHandSide(whileStatement.getAST.newSimpleName("con"))
+      newAssigment.setLeftHandSide(whileStatement.getAST.newSimpleName(fragmentName.getIdentifier))
       newAssigment.setOperator(Assignment.Operator.ASSIGN)
       newAssigment.setRightHandSide(rewriter.createCopyTarget(operand).asInstanceOf[MethodInvocation])
       newAssigment
@@ -89,5 +89,13 @@ class WhileStatementCon(val cu: CompilationUnit) {
     }
     else
       whileBody
+  }
+}
+
+object WhileStatementCon{
+  private[this] var variable = 0
+  def increment():String = {
+    variable = variable + 1
+    variable.toString
   }
 }
