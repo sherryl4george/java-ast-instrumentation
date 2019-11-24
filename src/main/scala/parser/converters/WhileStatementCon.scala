@@ -29,7 +29,7 @@ class WhileStatementCon(val cu: CompilationUnit) {
   def whileBlock(): Unit ={
     val whileStatementVisitor = new WhileStatementVisitor
     cu.accept(whileStatementVisitor)
-    val whileStatemtemts = whileStatementVisitor.getForStatements
+    val whileStatemtemts = whileStatementVisitor.getWhileStatements
     whileStatemtemts.map(whileBlockHelper(_))
   }
 

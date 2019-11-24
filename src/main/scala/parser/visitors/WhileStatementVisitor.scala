@@ -10,5 +10,5 @@ class WhileStatementVisitor extends ASTVisitor{
     super.visit(node)
   }
 
-  def getForStatements: List[WhileStatement] = whileStatements
+  def getWhileStatements: List[WhileStatement] = whileStatements
 }

@@ -1,6 +1,6 @@
 import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
-import parser.converters.WhileStatementCon
+import parser.instrumentation.AssignmentInstrum
 import parser.utils.{ASTParserLocal, FileWriter}
 
 class ForStatementVisitor extends ASTVisitor {
@@ -33,6 +33,8 @@ object Main extends App {
   val cu: CompilationUnit = astParser.getCU("/media/01D3908E9C0056A0/code/eclipse-workspace/cs474.test/src",
     "/usr/bin/java/lib/rt.jar",
     fileName)
-  val rewriter: ASTRewrite = new WhileStatementCon(cu).startBlockConvert()
+  val rewriter: ASTRewrite = new AssignmentInstrum(cu).startInstrum()
   FileWriter.writeFile(rewriter, fileName)
+//  val ap = new AP("","adf", 100)
+//  println(ap)
 }
