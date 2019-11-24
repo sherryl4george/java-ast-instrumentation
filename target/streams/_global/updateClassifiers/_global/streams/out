@@ -1,0 +1,4 @@
+[debug] "not up to date. inChanged = true, force = false
+[debug] Updating ProjectRef(uri("file:/media/01D3908E9C0056A0/code/IdeaProjects/cs474.cp_test/"), "cs474-cp_test")...
+[debug] Done updating ProjectRef(uri("file:/media/01D3908E9C0056A0/code/IdeaProjects/cs474.cp_test/"), "cs474-cp_test")
+[warn] There may be incompatibilities among your library dependencies; run 'evicted' to see detailed eviction warnings.
