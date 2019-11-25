@@ -1,46 +1,57 @@
+import java.io.File
+import java.nio.file.Paths
+
 import parser.converters.{BlockConverter, DoStatementCon, ForStatementCon, WhileStatementCon}
-import parser.instrumentation.{AssignmentInstrum, VDSInstrum}
-import parser.utils.{ASTParserLocal, FileWriter}
+import parser.instrumentation.{AssignmentInstrum, ReturnInstrum, VDSInstrum}
+import parser.utils.{ASTParserLocal, FileHelper}
+import org.apache.commons.io.{FileUtils, FilenameUtils}
 
 object Main extends App {
-  if (args.length < 3){
+  if (args.length < 1){
     println("Please pass source file, sources path and output file")
   }
-  val fileName = args(0)
-  val sources = args(1)
-  val outputFile = args(2)
 
-  val cu = ASTParserLocal.getParser(sources, "", fileName, "")
-  val originalCode = FileWriter.readFile(fileName)
+  val sources = args(0)
+  val src = new File(sources)
+  val oldSrc = new File(Paths.get(src.getParent, "old_src").toUri)
+  FileUtils.forceMkdir(oldSrc)
+  FileHelper.getJavaFiles(sources).map(instrumentBegin(sources,_))
 
-  val blockRewriter = new BlockConverter(cu).startBlockConvert()
-  val blockCode = FileWriter.getSourceCodeAsString(blockRewriter, originalCode)
-  val blockCU = ASTParserLocal.getParser(sources, "", fileName, blockCode)
+  def instrumentBegin(str: String, file: File) : Unit = {
+    val fileName = file.getAbsolutePath
+    val cu = ASTParserLocal.getParser(sources, "", fileName, "")
+    val originalCode = FileHelper.readFile(fileName)
 
-  val whileRewriter = new WhileStatementCon(blockCU).startBlockConvert()
-  val whileCode = FileWriter.getSourceCodeAsString(whileRewriter, blockCode)
-//  println("jhjhj")
-//  println(whileCode)
-  val whileCU = ASTParserLocal.getParser(sources, "", fileName, whileCode)
+    val blockRewriter = new BlockConverter(cu).startBlockConvert()
+    val blockCode = FileHelper.getSourceCodeAsString(blockRewriter, originalCode)
+    val blockCU = ASTParserLocal.getParser(sources, "", fileName, blockCode)
 
-  val doRewriter = new DoStatementCon(whileCU).startBlockConvert()
-  val doCode = FileWriter.getSourceCodeAsString(doRewriter, whileCode)
-  val doCU = ASTParserLocal.getParser(sources, "", fileName, doCode)
+    val whileRewriter = new WhileStatementCon(blockCU).startBlockConvert()
+    val whileCode = FileHelper.getSourceCodeAsString(whileRewriter, blockCode)
+    val whileCU = ASTParserLocal.getParser(sources, "", fileName, whileCode)
 
-  val forRewriter = new ForStatementCon(doCU).startBlockConvert()
-  val forCode = FileWriter.getSourceCodeAsString(forRewriter, doCode)
-  val forCU = ASTParserLocal.getParser(sources, "", fileName, forCode)
-  //  //
-  val assignmentRewriter = new AssignmentInstrum(forCU).startInstrum()
-  val assignmentCode = FileWriter.getSourceCodeAsString(assignmentRewriter, forCode)
-  val assignmentCU = ASTParserLocal.getParser(sources, "", fileName, assignmentCode)
+    val doRewriter = new DoStatementCon(whileCU).startBlockConvert()
+    val doCode = FileHelper.getSourceCodeAsString(doRewriter, whileCode)
+    val doCU = ASTParserLocal.getParser(sources, "", fileName, doCode)
 
-  val vdsRewriter = new VDSInstrum(assignmentCU).startInstrum()
-  val vdsCode = FileWriter.getSourceCodeAsString(vdsRewriter, assignmentCode)
- // val assignmentCU = ASTParserLocal.getParser(sources, "", fileName, assignmentCode)
+    val forRewriter = new ForStatementCon(doCU).startBlockConvert()
+    val forCode = FileHelper.getSourceCodeAsString(forRewriter, doCode)
+    val forCU = ASTParserLocal.getParser(sources, "", fileName, forCode)
 
+    val assignmentRewriter = new AssignmentInstrum(forCU).startInstrum()
+    val assignmentCode = FileHelper.getSourceCodeAsString(assignmentRewriter, forCode)
+    val assignmentCU = ASTParserLocal.getParser(sources, "", fileName, assignmentCode)
 
-  FileWriter.writeFile( vdsCode ,outputFile)
+    val vdsRewriter = new VDSInstrum(assignmentCU).startInstrum()
+    val vdsCode = FileHelper.getSourceCodeAsString(vdsRewriter, assignmentCode)
+    val vdsCU = ASTParserLocal.getParser(sources, "", fileName, vdsCode)
 
+    val returnRewriter = new ReturnInstrum(vdsCU).startInstrum()
+    val returnCode = FileHelper.getSourceCodeAsString(returnRewriter, vdsCode)
+    val returnCU = ASTParserLocal.getParser(sources, "", fileName, returnCode)
+
+    FileUtils.copyFileToDirectory(file,oldSrc)
+    FileHelper.writeFile( returnCode ,fileName)
+  }
 
 }
