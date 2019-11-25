@@ -23,8 +23,8 @@ import parser.visitors.DoStatementVisitor
   * having only one method invocation on either side of operator
   * f() + f() < 10 won't be handled in current implementation
   */
-class DoStatementCon(val cu: CompilationUnit, rewriter: ASTRewrite) {
-  //  private[this] val rewriter = ASTRewrite.create(cu.getAST)
+class DoStatementCon(val cu: CompilationUnit) {
+    private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   def startBlockConvert(): ASTRewrite ={
     doBlock()
@@ -55,8 +55,7 @@ class DoStatementCon(val cu: CompilationUnit, rewriter: ASTRewrite) {
         rewriter.getListRewrite(parent, Block.STATEMENTS_PROPERTY).insertBefore(newVDS, doStatement, null)
         rewriter.replace(operandMethod, fragmentSimpleName, null)
         val newAssignment = methodInvocationToAssignment(operandMethod,fragmentSimpleName)
-        val newdoBody = doToBody(doBody)
-        val lrw = rewriter.getListRewrite(newdoBody, Block.STATEMENTS_PROPERTY)
+        val lrw = rewriter.getListRewrite(doBody, Block.STATEMENTS_PROPERTY)
         lrw.insertLast(doStatement.getAST.newExpressionStatement(newAssignment), null)
       }
     }
@@ -90,16 +89,6 @@ class DoStatementCon(val cu: CompilationUnit, rewriter: ASTRewrite) {
       newAssigment.setRightHandSide(rewriter.createCopyTarget(operand).asInstanceOf[MethodInvocation])
       newAssigment
     }
-
-    def doToBody(doBody: Statement) = if (!doBody.isInstanceOf[Block]) {
-      val block = doStatement.getAST.newBlock
-      val lrw = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY)
-      lrw.insertLast(doBody, null)
-      rewriter.replace(doBody, block, null)
-      block
-    }
-    else
-      doBody
   }
 }
 

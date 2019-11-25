@@ -5,7 +5,10 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.utils.{Attribute, ExpressionUtils, utils}
 import parser.visitors.ExpressionStatementVisitor
 
-class AssignmentInstrum(val cu: CompilationUnit, rewriter: ASTRewrite) {
+class AssignmentInstrum(val cu: CompilationUnit) {
+  private[this] val rewriter = ASTRewrite.create(cu.getAST)
+  private[this] var attributes: List[Attribute] = List()
+
   def startInstrum(): ASTRewrite ={
     assignmentInstrum()
     rewriter

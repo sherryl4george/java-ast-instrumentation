@@ -7,19 +7,10 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.eclipse.jface.text.{BadLocationException, Document}
 
 object FileWriter {
-  def writeFile(rewriter: ASTRewrite, fileName: String, output:String) = {
-    var document2 = new Document(readFile(fileName))
-    val edits = rewriter.rewriteAST(document2, null)
-    try
-      edits.apply(document2)
-    catch {
-      case e: BadLocationException =>
-        e.printStackTrace()
-    }
-    val fileValue = document2.get
+  def writeFile(sourceCode: String, outputFile:String) = {
     try {
-      println(fileValue)
-      writeStringToFile(new File(output), fileValue)
+      println(sourceCode)
+      writeStringToFile(new File(outputFile), sourceCode)
     }
     catch {
       case e: IOException =>

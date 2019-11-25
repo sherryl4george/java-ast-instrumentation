@@ -23,8 +23,8 @@ import parser.visitors.ForStatementVisitor
   * having only one method invocation on either side of operator
   * f() + f() < 10 won't be handled in current implementation
   */
-class ForStatementCon(val cu: CompilationUnit, rewriter: ASTRewrite) {
-  //  private[this] val rewriter = ASTRewrite.create(cu.getAST)
+class ForStatementCon(val cu: CompilationUnit) {
+    private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   def startBlockConvert(): ASTRewrite ={
     forBlock()
@@ -55,8 +55,7 @@ class ForStatementCon(val cu: CompilationUnit, rewriter: ASTRewrite) {
         rewriter.getListRewrite(parent, Block.STATEMENTS_PROPERTY).insertBefore(newVDS, forStatement, null)
         rewriter.replace(operandMethod, fragmentSimpleName, null)
         val newAssignment = methodInvocationToAssignment(operandMethod,fragmentSimpleName)
-        val newforBody = forToBody(forBody)
-        val lrw = rewriter.getListRewrite(newforBody, Block.STATEMENTS_PROPERTY)
+        val lrw = rewriter.getListRewrite(forBody, Block.STATEMENTS_PROPERTY)
         lrw.insertLast(forStatement.getAST.newExpressionStatement(newAssignment), null)
       }
     }
@@ -66,7 +65,7 @@ class ForStatementCon(val cu: CompilationUnit, rewriter: ASTRewrite) {
       val fragmentSimpleName = operand.getAST.newSimpleName("for"+ForStatementCon.increment())
       val iTypeBinding = operand.getName.resolveTypeBinding
       fragment.setName(fragmentSimpleName)
-      if(iTypeBinding.isPrimitive){
+      if(iTypeBinding != null && iTypeBinding.isPrimitive){
         val pType = PrimitiveType.toCode(iTypeBinding.getName())
         pType match {
           case PrimitiveType.BOOLEAN => fragment.setInitializer(fragment.getAST.newBooleanLiteral(false))
@@ -76,7 +75,7 @@ class ForStatementCon(val cu: CompilationUnit, rewriter: ASTRewrite) {
       else
         fragment.setInitializer(fragment.getAST.newNullLiteral())
       val newVDS = operand.getAST.newVariableDeclarationStatement(fragment)
-      if (iTypeBinding.isPrimitive)
+      if (iTypeBinding != null && iTypeBinding.isPrimitive)
         newVDS.setType(operand.getAST.newPrimitiveType(PrimitiveType.toCode(iTypeBinding.getName)))
       else
         newVDS.setType(operand.getAST.newSimpleType(operand.getAST.newName(iTypeBinding.getName)))
@@ -90,16 +89,6 @@ class ForStatementCon(val cu: CompilationUnit, rewriter: ASTRewrite) {
       newAssigment.setRightHandSide(rewriter.createCopyTarget(operand).asInstanceOf[MethodInvocation])
       newAssigment
     }
-
-    def forToBody(forBody: Statement) = if (!forBody.isInstanceOf[Block]) {
-      val block = forStatement.getAST.newBlock
-      val lrw = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY)
-      lrw.insertLast(forBody, null)
-      rewriter.replace(forBody, block, null)
-      block
-    }
-    else
-      forBody
   }
 }
 

@@ -7,7 +7,8 @@ import parser.visitors.VDStatementVisitor
 
 import scala.jdk.CollectionConverters._
 
-class VDSInstrum(val cu: CompilationUnit, rewriter: ASTRewrite) {
+class VDSInstrum(val cu: CompilationUnit) {
+  private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   def startInstrum(): ASTRewrite ={
     varDSInstrum()
