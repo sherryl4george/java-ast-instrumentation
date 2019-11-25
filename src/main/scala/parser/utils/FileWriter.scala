@@ -8,7 +8,7 @@ import org.eclipse.jface.text.{BadLocationException, Document}
 
 object FileWriter {
   def writeFile(rewriter: ASTRewrite, fileName: String, output:String) = {
-    var document2 = new Document(readFileToString(new File(fileName)))
+    var document2 = new Document(readFile(fileName))
     val edits = rewriter.rewriteAST(document2, null)
     try
       edits.apply(document2)
@@ -26,5 +26,19 @@ object FileWriter {
         e.printStackTrace()
     }
   }
+
+  def getSourceCodeAsString(rewriter: ASTRewrite, oldSourceCode: String): String ={
+    var document = new Document(oldSourceCode)
+    val edits = rewriter.rewriteAST(document, null)
+    try
+      edits.apply(document)
+    catch {
+      case e: BadLocationException =>
+        e.printStackTrace()
+    }
+    document.get
+  }
+
+  def readFile(fileName: String): String = readFileToString(new File(fileName))
 
 }
