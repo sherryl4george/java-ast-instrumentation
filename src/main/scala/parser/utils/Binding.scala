@@ -29,6 +29,11 @@ object Binding {
         val declaringMethodClass = if(methodBinding != null && methodBinding.getDeclaringClass != null) methodBinding.getDeclaringClass.getQualifiedName else ""
         (declaringMethodClass, declaringMethodClass + "." + declaringMethod + "(" + methodParameters +")")
       }
+//      case IBinding.TYPE => {
+//        val typeBinding: ITypeBinding  = binding.asInstanceOf[ITypeBinding]
+//
+//        ("","")
+//      }
       //      case IBinding.PACKAGE => "> package binding"
       //      case IBinding.ANNOTATION => "> annotation binding"
       //      case IBinding.MEMBER_VALUE_PAIR =>
