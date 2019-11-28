@@ -7,6 +7,7 @@ import parser.utils.{ASTParserLocal, FileHelper}
 import org.apache.commons.io.{FileUtils, FilenameUtils}
 
 object Main extends App {
+
   if (args.length < 1){
     println("Please pass source file, sources path and output file")
   }

@@ -12,7 +12,6 @@ import scala.jdk.CollectionConverters._
 object FileHelper {
   def writeFile(sourceCode: String, outputFile:String) = {
     try {
-      println(sourceCode)
       writeStringToFile(new File(outputFile), sourceCode)
     }
     catch {
