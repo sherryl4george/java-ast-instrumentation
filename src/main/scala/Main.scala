@@ -55,7 +55,7 @@ object Main extends App {
     val controlCode = FileHelper.getSourceCodeAsString(controlRewriter,returnCode)
     val controlCU = ASTParserLocal.getParser(sources,"",fileName,controlCode)
 
-
+//    println(controlCode)
     FileUtils.copyFileToDirectory(file,oldSrc)
     FileHelper.writeFile( controlCode ,fileName)
   }

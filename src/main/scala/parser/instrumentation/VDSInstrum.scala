@@ -40,12 +40,12 @@ class VDSInstrum(val cu: CompilationUnit) {
       var log = ""
       if(attributes.length > 0) {
         log = "TemplateClass.instrum(" + cu.getLineNumber(statement.getStartPosition)
-        log += ", " + utils.wrapStringInQuotes("VDS")
+        log += ", " + utils.wrapStringInQuotes("VariableDeclaration")
         attributes.map(attribute => {
           if(hasInitializer)
             log += ", new AP("+ attribute.expType + ", " + attribute.binding + ", " + attribute.variable + ")"
           else
-            log += ", new AP("+ attribute.expType + ", " + attribute.binding + ", " + utils.wrapStringInQuotes(attribute.variable) + ")"
+            log += ", new AP("+ attribute.expType + ", " + attribute.binding + ", " + utils.wrapStringInQuotes("") + ")"
         }).mkString(", ")
         log += ");"
       }

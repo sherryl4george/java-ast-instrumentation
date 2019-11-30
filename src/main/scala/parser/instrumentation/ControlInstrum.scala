@@ -1,10 +1,10 @@
 package parser.instrumentation
 
 
-import org.eclipse.jdt.core.dom.{ASTNode, Block, CompilationUnit, DoStatement, EnhancedForStatement, Expression, ForStatement, IfStatement, NullLiteral, Statement, SwitchStatement, WhileStatement}
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
+import org.eclipse.jdt.core.dom._
 import parser.utils.{Attribute, ExpressionUtils, utils}
-import parser.visitors.{DoStatementVisitor, EnhancedForVisitor, ForStatementVisitor, IfStatementVisitor, SwitchStatementVisitor, WhileStatementVisitor}
+import parser.visitors._
 
 class ControlInstrum(val cu:CompilationUnit) {
   private[this] val rewriter = ASTRewrite.create(cu.getAST)
@@ -39,8 +39,6 @@ class ControlInstrum(val cu:CompilationUnit) {
     ifStatementVisitor.getIfStatements.map(createStatements(_))
     switchStatementVisitor.getSwitchStatements.map(createStatements(_))
 
-    println(statements.size)
-    println(statements)
     statements.map(controlInstrumHelper(_))
   }
 

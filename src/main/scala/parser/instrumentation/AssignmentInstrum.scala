@@ -2,7 +2,7 @@ package parser.instrumentation
 
 import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
-import parser.utils.{Attribute, ExpressionUtils, utils}
+import parser.utils.{Attribute, ExpressionUtils}
 import parser.visitors.ExpressionStatementVisitor
 
 class AssignmentInstrum(val cu: CompilationUnit) {

@@ -40,7 +40,7 @@ object ExpressionUtils{
   def recurseExpression(expression: Expression): List[Attribute] ={
     var attributes: List[Attribute] = List()
 
-    def recurseExpressionHelper(expression: Expression): Unit = {
+    def recurseExpressionHelper(expression: Expression, extra: String = ""): Unit = {
       expression match {
         case _: ArrayCreation => {}
         case _: ArrayInitializer => {}
@@ -60,7 +60,7 @@ object ExpressionUtils{
           val (binding, methodSignature) = Binding.getBindingLabel(methodInvocation.resolveConstructorBinding())
           val newBinding = if(qualifiedName.length > 0) qualifiedName else binding
           if(newBinding.length > 0) {
-            attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("ClassInstanceCreation"), utils.wrapStringInQuotes(newBinding), utils.wrapStringInQuotes(methodSignature))
+            attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "ClassInstanceCreation"), utils.wrapStringInQuotes(newBinding), utils.wrapStringInQuotes(methodSignature))
             //          attributes = attributes :+ new Attribute("MethodInvocation", utils.wrapStringInQuotes(binding), utils.wrapStringInQuotes(qualifiedName+methodInvocation.getName.toString))
             val args = methodInvocation.arguments().asScala.toList
             args.foreach(x => recurseExpressionHelper(x.asInstanceOf[Expression]))
@@ -70,12 +70,12 @@ object ExpressionUtils{
         case x: FieldAccess => {
           val (binding, declaringMethod) = Binding.getBindingLabel(x.getName.resolveBinding())
           val sdf = x.getName.getFullyQualifiedName
-          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("SimpleName"), utils.wrapStringInQuotes(binding),
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "SimpleName"), utils.wrapStringInQuotes(binding),
             List(x.getExpression, x.getName.getFullyQualifiedName).mkString("."))
         }
         case x: InfixExpression => {
-          recurseExpressionHelper(x.getLeftOperand());
-          recurseExpressionHelper(x.getRightOperand());
+          recurseExpressionHelper(x.getLeftOperand(), extra);
+          recurseExpressionHelper(x.getRightOperand(), extra);
         }
         case _: MethodInvocation => {
           var qualifiedName = new String
@@ -87,10 +87,20 @@ object ExpressionUtils{
 
           val (binding, methodSignature) = Binding.getBindingLabel(methodInvocation.resolveMethodBinding())
           val newBinding = if(qualifiedName.length > 0) qualifiedName else binding
-          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("MethodInvocation"), utils.wrapStringInQuotes(newBinding), utils.wrapStringInQuotes(methodSignature))
+          var finalBinding = ""
+          var finalMethodSignature = ""
+          if(methodSignature.contains(newBinding) && methodSignature.indexOf(newBinding) ==  methodSignature.lastIndexOf(newBinding)){
+            finalBinding = methodSignature
+            finalMethodSignature = ""
+          }
+          else{
+            finalBinding =  if(methodSignature.length > 0) newBinding+"."+methodSignature else newBinding
+            finalMethodSignature = ""
+          }
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "MethodInvocation"), utils.wrapStringInQuotes(finalBinding.replace("\"","")), utils.wrapStringInQuotes(finalMethodSignature.replace("\"","")))
           //          attributes = attributes :+ new Attribute("MethodInvocation", utils.wrapStringInQuotes(binding), utils.wrapStringInQuotes(qualifiedName+methodInvocation.getName.toString))
           val args = methodInvocation.arguments().asScala.toList
-          args.foreach(x => recurseExpressionHelper(x.asInstanceOf[Expression]))
+          args.foreach(x => recurseExpressionHelper(x.asInstanceOf[Expression], "args "))
         }
         case x: ParenthesizedExpression => {
           recurseExpressionHelper(x.getExpression)
@@ -101,14 +111,14 @@ object ExpressionUtils{
           val test = simpleName.toString
           val (binding, declaringMethod) = Binding.getBindingLabel(simpleName.resolveBinding())
           val sdf = expression.asInstanceOf[SimpleName].getFullyQualifiedName
-          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("SimpleName"), utils.wrapStringInQuotes(binding), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "SimpleName"), utils.wrapStringInQuotes(binding+"."+expression.asInstanceOf[SimpleName].getFullyQualifiedName), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
         }
         case _: PostfixExpression => {}
         case _: PrefixExpression => {}
         case x: QualifiedName => {
           val (binding, declaringMethod) = Binding.getBindingLabel(x.getName.resolveBinding())
           val sdf = x.getName.getFullyQualifiedName
-          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("QualifiedName"), utils.wrapStringInQuotes(binding),
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "QualifiedName"), utils.wrapStringInQuotes(binding),
             List(x.getQualifier.getFullyQualifiedName, x.getName.getFullyQualifiedName).mkString("."))
         }
         case _: SuperMethodInvocation => {}
@@ -117,12 +127,12 @@ object ExpressionUtils{
         case _: TypeMethodReference => {}
         case _: VariableDeclarationExpression => {}
         case x: NumberLiteral => {
-          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("NumberLiteral"), utils.wrapStringInQuotes(""), x.getToken)
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "NumberLiteral"), utils.wrapStringInQuotes(""), x.getToken)
         }
-        case _: NullLiteral => attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("NullLiteral"), utils.wrapStringInQuotes(""), "null")
-        case x: StringLiteral => attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("StringLiteral"), utils.wrapStringInQuotes(""), x.getEscapedValue)
-        case x: BooleanLiteral => attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("BooleanLiteral"), utils.wrapStringInQuotes(""), x.booleanValue().toString)
-        case x: CharacterLiteral => attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("CharacterLiteral"), utils.wrapStringInQuotes(""), utils.wrapStringInQuotes(x.getEscapedValue))
+        case _: NullLiteral => attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "NullLiteral"), utils.wrapStringInQuotes(""), "null")
+        case x: StringLiteral => attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "StringLiteral"), utils.wrapStringInQuotes(""), x.getEscapedValue)
+        case x: BooleanLiteral => attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "BooleanLiteral"), utils.wrapStringInQuotes(""), x.booleanValue().toString)
+        case x: CharacterLiteral => attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "CharacterLiteral"), utils.wrapStringInQuotes(""), utils.wrapStringInQuotes(x.getEscapedValue))
         case _ => {}
 
       }
