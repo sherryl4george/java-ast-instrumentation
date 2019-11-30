@@ -43,10 +43,10 @@ object ExpressionUtils{
       expression match {
         case _: ArrayCreation => {}
         case x :  ArrayInitializer => {
-         val expressionList =  x.expressions().asScala.toList
-//          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array Begin"),utils.wrapStringInQuotes(""),"{")
+          val expressionList =  x.expressions().asScala.toList
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array Begin"),utils.wrapStringInQuotes(""),"{")
           expressionList.foreach(x => recurseExpressionHelper(x.asInstanceOf[Expression]))
-//          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array End"),utils.wrapStringInQuotes(""),"}")
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array End"),utils.wrapStringInQuotes(""),"}")
 
         }
         case x: Assignment => {
