@@ -30,13 +30,6 @@ class AssignmentInstrum(val cu: CompilationUnit) {
         getParent(parent.getParent)
     }
 
-    def getImmediateParent(parent: ASTNode): ASTNode ={
-      if(parent.isInstanceOf[ExpressionStatement])
-        parent
-      else
-        getParent(parent.getParent)
-    }
-
     val parent = getParent(expressionStatement.getParent)
 
     val attributes: List[Attribute] = ExpressionUtils.recurseExpression(expressionStatement.getExpression)

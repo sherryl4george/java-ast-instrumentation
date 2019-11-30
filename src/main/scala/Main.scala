@@ -2,9 +2,9 @@ import java.io.File
 import java.nio.file.Paths
 
 import parser.converters.{BlockConverter, DoStatementCon, ForStatementCon, WhileStatementCon}
-import parser.instrumentation.{AssignmentInstrum, ReturnInstrum, VDSInstrum}
+import parser.instrumentation.{AssignmentInstrum, ControlInstrum, ReturnInstrum, VDSInstrum}
 import parser.utils.{ASTParserLocal, FileHelper}
-import org.apache.commons.io.{FileUtils, FilenameUtils}
+import org.apache.commons.io.{FileUtils}
 
 object Main extends App {
 
@@ -51,8 +51,13 @@ object Main extends App {
     val returnCode = FileHelper.getSourceCodeAsString(returnRewriter, vdsCode)
     val returnCU = ASTParserLocal.getParser(sources, "", fileName, returnCode)
 
+    val controlRewriter = new ControlInstrum(returnCU).startInstrum()
+    val controlCode = FileHelper.getSourceCodeAsString(controlRewriter,returnCode)
+    val controlCU = ASTParserLocal.getParser(sources,"",fileName,controlCode)
+
+
     FileUtils.copyFileToDirectory(file,oldSrc)
-    FileHelper.writeFile( returnCode ,fileName)
+    FileHelper.writeFile( controlCode ,fileName)
   }
 
 }

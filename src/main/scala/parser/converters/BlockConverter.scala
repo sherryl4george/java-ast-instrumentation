@@ -51,7 +51,7 @@ class BlockConverter(val cu: CompilationUnit) {
         rewriter.replace(ifBody, block, null)
       }
       val elseBody = ifStatement.getElseStatement
-      if(elseBody != null && !elseBody.isInstanceOf[IfStatement] && !elseBody.isInstanceOf[Block])
+      if(elseBody != null && !elseBody.isInstanceOf[Block])
         {
           val block = ifStatement.getElseStatement.getAST.newBlock()
           val lrw = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY)
