@@ -79,7 +79,19 @@ class ControlInstrum(val cu:CompilationUnit) {
     val siso = cu.getAST.newTextElement
     siso.setText(log)
     val lrw = rewriter.getListRewrite(parent, Block.STATEMENTS_PROPERTY)
-    lrw.insertBefore(siso, statement, null)
+    statement.getNodeType match {
+      case ASTNode.FOR_STATEMENT => {
+        val lrw = rewriter.getListRewrite(statement.asInstanceOf[ForStatement].getBody, Block.STATEMENTS_PROPERTY)
+        lrw.insertFirst(siso,null)
+      }
+      case ASTNode.ENHANCED_FOR_STATEMENT => {
+        val lrw = rewriter.getListRewrite(statement.asInstanceOf[EnhancedForStatement].getBody, Block.STATEMENTS_PROPERTY)
+        lrw.insertFirst(siso,null)      }
+      case _ => {
+        val lrw = rewriter.getListRewrite(parent, Block.STATEMENTS_PROPERTY)
+        lrw.insertBefore(siso, statement, null)
+      }
+    }
     }
 }
 

@@ -33,7 +33,6 @@ object ExpressionUtils{
       case x: NumberLiteral => utils.wrapStringInQuotes("")
       case _: NullLiteral => utils.wrapStringInQuotes("")
       case _ => utils.wrapStringInQuotes("")
-
     }
   }
 
@@ -43,7 +42,13 @@ object ExpressionUtils{
     def recurseExpressionHelper(expression: Expression, extra: String = ""): Unit = {
       expression match {
         case _: ArrayCreation => {}
-        case _: ArrayInitializer => {}
+        case x :  ArrayInitializer => {
+         val expressionList =  x.expressions().asScala.toList
+//          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array Begin"),utils.wrapStringInQuotes(""),"{")
+          expressionList.foreach(x => recurseExpressionHelper(x.asInstanceOf[Expression]))
+//          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array End"),utils.wrapStringInQuotes(""),"}")
+
+        }
         case x: Assignment => {
           val assignment = expression.asInstanceOf[Assignment]
           recurseExpressionHelper(assignment.getLeftHandSide)
