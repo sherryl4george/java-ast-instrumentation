@@ -44,9 +44,9 @@ object ExpressionUtils{
         case _: ArrayCreation => {}
         case x :  ArrayInitializer => {
           val expressionList =  x.expressions().asScala.toList
-          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array Begin"),utils.wrapStringInQuotes(""),"{")
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array Begin"),utils.wrapStringInQuotes(""),utils.wrapStringInQuotes("{"))
           expressionList.foreach(x => recurseExpressionHelper(x.asInstanceOf[Expression]))
-          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array End"),utils.wrapStringInQuotes(""),"}")
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array End"),utils.wrapStringInQuotes(""),utils.wrapStringInQuotes("}"))
 
         }
         case x: Assignment => {
