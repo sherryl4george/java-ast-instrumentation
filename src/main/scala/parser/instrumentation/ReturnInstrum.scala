@@ -39,9 +39,9 @@ class ReturnInstrum (val cu: CompilationUnit) {
       }).mkString(", ")
       log += ");"
     }
-    val siso = cu.getAST.newTextElement
-    siso.setText(log)
+    val textToAdd = cu.getAST.newTextElement
+    textToAdd.setText(log)
     val lrw = rewriter.getListRewrite(parent, Block.STATEMENTS_PROPERTY)
-    lrw.insertBefore(siso, statement, null)
+    lrw.insertBefore(textToAdd, statement, null)
   }
 }

@@ -42,10 +42,10 @@ class AssignmentInstrum(val cu: CompilationUnit) {
       }).mkString(", ")
       log += ");"
     }
-    val siso = cu.getAST.newTextElement
-    siso.setText(log)
+    val textToAdd = cu.getAST.newTextElement
+    textToAdd.setText(log)
     val lrw = rewriter.getListRewrite(parent, Block.STATEMENTS_PROPERTY)
-    lrw.insertAfter(siso, expressionStatement, null)
+    lrw.insertAfter(textToAdd, expressionStatement, null)
   }
 
 
