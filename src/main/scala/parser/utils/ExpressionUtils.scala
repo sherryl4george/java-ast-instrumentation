@@ -42,6 +42,14 @@ object ExpressionUtils{
     def recurseExpressionHelper(expression: Expression, extra: String = ""): Unit = {
       expression match {
         case _: ArrayCreation => {}
+        case x: ArrayAccess => {
+          if(extra.isEmpty)
+            attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array Begin"),utils.wrapStringInQuotes(""),utils.wrapStringInQuotes("{"))
+          recurseExpressionHelper(x.getArray,"inner ")
+          recurseExpressionHelper(x.getIndex," inner ")
+          if(extra.isEmpty)
+            attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array End"),utils.wrapStringInQuotes(""),utils.wrapStringInQuotes("}"))
+        }
         case x :  ArrayInitializer => {
           val expressionList =  x.expressions().asScala.toList
           attributes = attributes :+ new Attribute(utils.wrapStringInQuotes("Array Begin"),utils.wrapStringInQuotes(""),utils.wrapStringInQuotes("{"))
@@ -118,8 +126,25 @@ object ExpressionUtils{
           val sdf = expression.asInstanceOf[SimpleName].getFullyQualifiedName
           attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "SimpleName"), utils.wrapStringInQuotes(binding+"."+expression.asInstanceOf[SimpleName].getFullyQualifiedName), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
         }
-        case _: PostfixExpression => {}
-        case _: PrefixExpression => {}
+        case x: PostfixExpression => {
+          recurseExpressionHelper(x.getOperand)
+        }
+        case x: PrefixExpression => {
+          val operator = x.getOperator
+          operator match {
+            case PrefixExpression.Operator.MINUS => {
+              val operand = x.getOperand
+              operand.getNodeType match
+                {
+                case ASTNode.NUMBER_LITERAL => {
+                  attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "NumberLiteral"), utils.wrapStringInQuotes(""), operator.toString + operand.asInstanceOf[NumberLiteral].getToken)
+                }
+                case _ => recurseExpressionHelper(operand)
+              }
+            }
+            case _ => recurseExpressionHelper(x.getOperand)
+          }
+        }
         case x: QualifiedName => {
           val (binding, declaringMethod) = Binding.getBindingLabel(x.getName.resolveBinding())
           val sdf = x.getName.getFullyQualifiedName
