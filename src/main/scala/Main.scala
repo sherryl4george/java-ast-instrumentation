@@ -14,9 +14,13 @@ object Main extends App {
 
   val sources = args(0)
   val src = new File(sources)
+  // Delete astparser directory
+  FileUtils.deleteDirectory(new File(Paths.get(src.toString, "astparser").toUri))
   val oldSrc = new File(Paths.get(src.getParent, "old_src").toUri)
   FileUtils.forceMkdir(oldSrc)
   FileHelper.getJavaFiles(sources).map(instrumentBegin(sources,_))
+  // Copy fresh astparser directory
+  FileUtils.copyDirectoryToDirectory(new File(getClass.getResource("astparser").toURI), src)
 
   def instrumentBegin(str: String, file: File) : Unit = {
     val fileName = file.getAbsolutePath

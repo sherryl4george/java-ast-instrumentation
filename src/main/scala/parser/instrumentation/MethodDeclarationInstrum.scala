@@ -15,7 +15,7 @@ class MethodDeclarationInstrum(val cu: CompilationUnit) {
     methodDeclarationInstrum()
     val lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY)
     val textToAdd = cu.getAST.newTextElement
-    textToAdd.setText("import test.*;")
+    textToAdd.setText("import astparser.*;")
     lrw.insertLast(textToAdd, null)
     rewriter
   }
