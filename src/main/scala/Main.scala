@@ -2,7 +2,7 @@ import java.io.File
 import java.nio.file.Paths
 
 import org.apache.commons.io.FileUtils
-import parser.converters.{BlockConverter, DoStatementCon, ForStatementCon, WhileStatementCon}
+import parser.converters.{BlockConverter, DoStatementCon, FinalConverter, ForStatementCon, WhileStatementCon}
 import parser.instrumentation._
 import parser.utils.{ASTParserLocal, FileHelper}
 
@@ -19,6 +19,7 @@ object Main extends App {
   FileHelper.getJavaFiles(sources).map(instrumentBegin(sources,_))
 
   def instrumentBegin(str: String, file: File) : Unit = {
+
     val fileName = file.getAbsolutePath
     val cu = ASTParserLocal.getParser(sources, "", fileName, "")
     val originalCode = FileHelper.readFile(fileName)
@@ -39,29 +40,17 @@ object Main extends App {
     val forCode = FileHelper.getSourceCodeAsString(forRewriter, doCode)
     val forCU = ASTParserLocal.getParser(sources, "", fileName, forCode)
 
-    val assignmentRewriter = new AssignmentInstrum(forCU).startInstrum()
-    val assignmentCode = FileHelper.getSourceCodeAsString(assignmentRewriter, forCode)
-    val assignmentCU = ASTParserLocal.getParser(sources, "", fileName, assignmentCode)
+    FileHelper.writeFile( forCode ,fileName)
 
-    val vdsRewriter = new VDSInstrum(assignmentCU).startInstrum()
-    val vdsCode = FileHelper.getSourceCodeAsString(vdsRewriter, assignmentCode)
-    val vdsCU = ASTParserLocal.getParser(sources, "", fileName, vdsCode)
+    val finalRewriter = new Instrum(forCU).startInstrum()
+    val finalCode = FileHelper.getSourceCodeAsString(finalRewriter,forCode)
+    val finalCU = ASTParserLocal.getParser(sources,"",fileName,finalCode)
 
-    val returnRewriter = new ReturnInstrum(vdsCU).startInstrum()
-    val returnCode = FileHelper.getSourceCodeAsString(returnRewriter, vdsCode)
-    val returnCU = ASTParserLocal.getParser(sources, "", fileName, returnCode)
+    val completeRewriter = new FinalConverter(finalCU).startInstrum()
+    val completeCode = FileHelper.getSourceCodeAsString(completeRewriter,finalCode)
 
-    val controlRewriter = new ControlInstrum(returnCU).startInstrum()
-    val controlCode = FileHelper.getSourceCodeAsString(controlRewriter,returnCode)
-    val controlCU = ASTParserLocal.getParser(sources,"",fileName,controlCode)
-
-    val methodDeclarationRewriter = new MethodDeclarationInstrum(controlCU).startInstrum()
-    val methodDeclarationCode = FileHelper.getSourceCodeAsString(methodDeclarationRewriter,controlCode)
-    val methodDeclarationCU = ASTParserLocal.getParser(sources,"",fileName,controlCode)
-
-//    println(methodDeclarationCode)
     FileUtils.copyFileToDirectory(file,oldSrc)
-    FileHelper.writeFile( methodDeclarationCode ,fileName)
+    FileHelper.writeFile( completeCode ,fileName)
   }
 
 }
