@@ -4,18 +4,33 @@ import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.visitors.{DoStatementVisitor, EnhancedForVisitor, ForStatementVisitor, IfStatementVisitor, WhileStatementVisitor}
 
-
-/** *
-  * Change all statements to blocks.
-  */
+/**
+ * Converts all constructs to blocks.
+ * This is done as a first step in re-writing.
+ * This helps in simplifying detailed re-writing as well as adding instrumentation in non-blocked statements in the future.
+ * @param cu
+ */
 class BlockConverter(val cu: CompilationUnit) {
   private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
+  /**
+   * converts each clause to a block and returns a rewriter.
+   * @return ASTRewrite
+   */
   def startBlockConvert(): ASTRewrite = {
     block()
     rewriter
   }
 
+  /**
+   * The block conversion method
+   * Converts while, for, do-while, if, for-each statements into blocks, if not already blocked.
+   * while(i > 0)
+   * i++ ;        -----------------> modified to
+   * while(i > 0) {
+   * i++;
+   * }
+   */
   def block(): Unit = {
     val whileStatementVisitor = new WhileStatementVisitor
     val forStatementVisitor = new ForStatementVisitor
@@ -42,7 +57,11 @@ class BlockConverter(val cu: CompilationUnit) {
     ifStatements.map(ifToBody(_))
   }
 
-    def ifToBody(ifStatement : IfStatement) = {
+  /**
+   * Blocks if-elseif-else statements, if they contain single statements without blocks.
+   * @param ifStatement
+   */
+  def ifToBody(ifStatement : IfStatement) = {
      val ifBody = ifStatement.getThenStatement
       if(!ifBody.isInstanceOf[Block]){
         val block = ifStatement.getAST.newBlock
@@ -60,6 +79,10 @@ class BlockConverter(val cu: CompilationUnit) {
         }
     }
 
+  /**
+   * Blocks while statements, if they contain single statements without blocks.
+   * @param whileStatement
+   */
     def whileToBody(whileStatement : WhileStatement) = {
       val whileBody = whileStatement.getBody
       if (!whileBody.isInstanceOf[Block]) {
@@ -70,6 +93,10 @@ class BlockConverter(val cu: CompilationUnit) {
       }
     }
 
+  /**
+   * Blocks for statements if they contain single statements without a block.
+   * @param forStatement
+   */
   def forToBody(forStatement : ForStatement) = {
     val forBody = forStatement.getBody
     if (!forBody.isInstanceOf[Block]) {
@@ -80,6 +107,10 @@ class BlockConverter(val cu: CompilationUnit) {
     }
   }
 
+  /**
+   * Blocks range based for statements if they contain single statements without a block.
+   * @param forStatement
+   */
   def enhancedForToBody(forStatement : EnhancedForStatement) = {
     val forBody = forStatement.getBody
     if (!forBody.isInstanceOf[Block]) {
@@ -90,6 +121,10 @@ class BlockConverter(val cu: CompilationUnit) {
     }
   }
 
+  /**
+   * Blocks do-while statements if they contain single statements without a block.
+   * @param doStatement
+   */
   def doToBody(doStatement : DoStatement) = {
     val doBody = doStatement.getBody
     if (!doBody.isInstanceOf[Block]) {

@@ -1,14 +1,30 @@
 package parser.instrumentation
-import org.eclipse.jdt.core.dom.{ASTNode, Block, CompilationUnit, DoStatement, EnhancedForStatement, Expression, ExpressionStatement, ForStatement, IfStatement, MethodDeclaration, ReturnStatement, SingleVariableDeclaration, Statement, SwitchStatement, VariableDeclaration, VariableDeclarationFragment, VariableDeclarationStatement, WhileStatement}
+import org.eclipse.jdt.core.dom.{ASTNode, Block, CompilationUnit, EnhancedForStatement, ExpressionStatement, ForStatement, MethodDeclaration, ReturnStatement, Statement, VariableDeclarationStatement}
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.utils.{Attribute, ExpressionUtils, utils}
 import parser.visitors.{DoStatementVisitor, EnhancedForVisitor, ExpressionStatementVisitor, ForStatementVisitor, IfStatementVisitor, MethodDeclarationVisitor, ReturnStatementVisitor, SwitchStatementVisitor, VDStatementVisitor, WhileStatementVisitor}
 
+/**
+ * The Main Instrumentor class.
+ * This is the seed for instrumenting all statements.
+ * Instrumented statements include -
+ * Assignments, Expression Statements (Method invocations, Field Access, Infix, Prefix, postfix expressions, Class Instance creation, Array access, array initialization ),
+ * Method Declarations, Control Statements (if, for, while, do-while, for each, switch), Return Statements, Variable Declarations.
+ * @param cu - A compilation unit.
+ */
 class Instrum(val cu: CompilationUnit){
     private[this] val rewriter = ASTRewrite.create(cu.getAST)
     private[this] var nodes : List[ASTNode] = List()
 
+  /**
+   * The main method where instrumentation begins.
+   * Visits all statements and creates a list of ASTNodes that were visited.
+   * Invokes individual instrumentors on each of these nodes.
+   * @return
+   */
   def startInstrum(): ASTRewrite = {
+
+      //Create individual visitors for each statement.
       val expressionStatementVisitor = new ExpressionStatementVisitor
       val vdStatementVisitor = new VDStatementVisitor
       val returnStatementVisitor = new ReturnStatementVisitor
@@ -20,6 +36,7 @@ class Instrum(val cu: CompilationUnit){
       val switchStatementVisitor = new SwitchStatementVisitor
       val methodDeclarationVisitor = new MethodDeclarationVisitor
 
+      //Visit all statements.
       cu.accept(expressionStatementVisitor)
       cu.accept(vdStatementVisitor)
       cu.accept(returnStatementVisitor)
@@ -31,8 +48,9 @@ class Instrum(val cu: CompilationUnit){
       cu.accept(switchStatementVisitor)
       cu.accept(methodDeclarationVisitor)
 
+      //Create a nodes list with all the visited nodes.
       expressionStatementVisitor.getExpressionStatements.map(createNodes(_))
-      vdStatementVisitor.getExpressionStatements.map(createNodes(_))
+      vdStatementVisitor.getVariableDeclarationStatements.map(createNodes(_))
       returnStatementVisitor.getReturnStatements.map(createNodes(_))
       forStatementVisitor.getForStatements.map(createNodes(_))
       enhancedForStatementVisitor.getForStatements.map(createNodes(_))
@@ -41,28 +59,44 @@ class Instrum(val cu: CompilationUnit){
       ifStatementVisitor.getIfStatements.map(createNodes(_))
       switchStatementVisitor.getSwitchStatements.map(createNodes(_))
       methodDeclarationVisitor.getMethodDeclarations.map(createNodes(_))
+
+      //Invoke the instrumentor on each node.
       nodes.map(instrumHelper(_))
       rewriter
     }
 
-    def instrumHelper(node: ASTNode) = {
+  /**
+   * The Instrumentor class that identifies the type of statement and invokes the corresponding instrumentor
+   * Collects each instrumentor attributes and creates the instrumentation statement with information containing -
+   * Line number, Statement Type, Binding and Variable name/value.
+   * Rewrites by adding these instrumentation statements into the AST.
+   * @param node
+   * @return
+   */
+  def instrumHelper(node: ASTNode) = {
+      //Identify the type of expression.
       node.getNodeType match {
+        // Expression Statement
         case ASTNode.EXPRESSION_STATEMENT => {
           val expressionStatement = node.asInstanceOf[ExpressionStatement]
           val attributes = new AssignmentInstrum().assignmentInstrumHelper(expressionStatement)
           val name = ExpressionUtils.getTextForExpression(expressionStatement.getExpression)
           val log = makeLog(attributes,node,name)
+          //Rewrite is done after the statement.
           rewrite(log,node,"after")
         }
 
+        //Return Statement
         case ASTNode.RETURN_STATEMENT => {
           val parent = getParent(node.getParent)
           val returnStatement = node.asInstanceOf[ReturnStatement]
           val attributes = new ReturnInstrum().returnInstrumHelper(returnStatement)
           val log = makeLog(attributes,node,"ReturnStatement")
+          //Rewrite is done before the statement.
           rewrite(log,node,"before")
         }
 
+        //If, Switch, While, Do-while
         case ASTNode.SWITCH_STATEMENT |
              ASTNode.IF_STATEMENT |
             ASTNode.WHILE_STATEMENT |
@@ -70,9 +104,14 @@ class Instrum(val cu: CompilationUnit){
           val parent = getParent(node.getParent)
           val (attributes, name)= new ControlInstrum().controlInstrumHelper(node.asInstanceOf[Statement])
           val log = makeLog(attributes, node, name)
+          //Rewrite is done before statement.
           rewrite(log,node,"before")
         }
 
+        /**
+         * For and For-each - handled separately. The variable used in the initializer/expression may be declared within the for loop.
+         * To handle this case, instrumentation is added  before the first statement in the loop body.
+         */
         case ASTNode.FOR_STATEMENT => {
           val (attributes, name)= new ControlInstrum().controlInstrumHelper(node.asInstanceOf[Statement])
           val log = makeLog(attributes, node, name)
@@ -85,30 +124,43 @@ class Instrum(val cu: CompilationUnit){
           rewrite(log,node.asInstanceOf[EnhancedForStatement].getBody,"first")
         }
 
+        //Variable Declaration Statement
         case ASTNode.VARIABLE_DECLARATION_STATEMENT => {
           val parent = getParent(node.getParent)
           val results = new VDSInstrum().varDFragmentInstrumHelper(node.asInstanceOf[VariableDeclarationStatement])
           results.map(x => {
             val log = makeLog(x._1,x._2,node,"VariableDeclaration")
+            //Rewrite is done after statement.
             rewrite(log,node,"after")
           })
         }
 
+        //Method Declaration.
         case ASTNode.METHOD_DECLARATION => {
           val methodDeclaration = node.asInstanceOf[MethodDeclaration]
           val attributes = new MethodDeclarationInstrum().methodDeclarationInstrumHelper(methodDeclaration)
           val log = makeLog(attributes,node,"MethodDeclaration")
           val methodBody = methodDeclaration.getBody
           if(methodBody != null)
+          //Instrumentation statements are added as the first statement in the method body.
             rewrite(log,methodBody,"first")
         }
       }
     }
 
-    def createNodes(node : ASTNode): Unit = {
+  /**
+   * create the nodes list. Add all visited nodes to the list.
+   * @param node
+   */
+  def createNodes(node : ASTNode): Unit = {
       nodes = nodes :+ node
     }
 
+  /**
+   * Identifies the parent for each node. This is necessary to identify the binding.
+   * @param parent
+   * @return
+   */
     def getParent(parent: ASTNode): ASTNode = {
       if (parent.isInstanceOf[Block])
         parent
@@ -116,6 +168,15 @@ class Instrum(val cu: CompilationUnit){
         getParent(parent.getParent)
     }
 
+  /**
+   * Logging for Variable Declaration to handle the existence of an initializer as a special case .
+   * Creates and returns the instrumentation statement to be inserted.
+   * @param attributes
+   * @param hasInitializer
+   * @param node
+   * @param name
+   * @return
+   */
     def makeLog(attributes : List[Attribute], hasInitializer : Boolean, node : ASTNode, name : String) = {
       var log = ""
       if (attributes.length > 0) {
@@ -132,6 +193,13 @@ class Instrum(val cu: CompilationUnit){
       log
     }
 
+  /**
+   * Logging for all other statements other than Variable declaration statement. Creates and returns the instrumentation statement to be inserted.
+   * @param attributes
+   * @param node
+   * @param name
+   * @return
+   */
     def makeLog(attributes : List[Attribute], node : ASTNode, name : String): String ={
       var log = ""
       if(attributes.length > 0) {
@@ -146,6 +214,12 @@ class Instrum(val cu: CompilationUnit){
       log
     }
 
+  /**
+   * Adds the instrumentation statement into AST at the specified position using an ASTRewriter.
+   * @param log
+   * @param node
+   * @param position
+   */
     def rewrite(log:String, node: ASTNode, position:String) = {
       val textToAdd = cu.getAST.newTextElement
       textToAdd.setText(log)

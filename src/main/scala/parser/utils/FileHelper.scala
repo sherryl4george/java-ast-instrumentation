@@ -9,7 +9,16 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.eclipse.jface.text.{BadLocationException, Document}
 import scala.jdk.CollectionConverters._
 
+/**
+The util class to handle file operations.
+ */
 object FileHelper {
+
+  /**
+   * Writes a source code string to a file.
+   * @param sourceCode
+   * @param outputFile
+   */
   def writeFile(sourceCode: String, outputFile:String) = {
     try {
       writeStringToFile(new File(outputFile), sourceCode)
@@ -20,6 +29,12 @@ object FileHelper {
     }
   }
 
+  /**
+   * Apply the rewritten AST to the old source code and get the modified source as a string.
+   * @param rewriter
+   * @param oldSourceCode
+   * @return
+   */
   def getSourceCodeAsString(rewriter: ASTRewrite, oldSourceCode: String): String ={
     var document = new Document(oldSourceCode)
     val edits = rewriter.rewriteAST(document, null)
@@ -32,11 +47,22 @@ object FileHelper {
     document.get
   }
 
+  /**
+   * Reads a file and returns the file contents as a string.
+   * @param fileName
+   * @return
+   */
   def readFile(fileName: String): String = readFileToString(new File(fileName))
 
-  def getJavaFiles(source: String) : List[File] = {
+  /**
+   * Filters a list of files by extension.
+   * @param source
+   * @param extension
+   * @return
+   */
+  def getFilesByExtension(source: String, extension: String) : List[File] = {
     FileUtils.listFiles(new File(source), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).asScala.toList.filter(file=>{
-      FilenameUtils.getExtension(file.getAbsolutePath).equals("java")
+      FilenameUtils.getExtension(file.getAbsolutePath).equals(extension)
     })
   }
 

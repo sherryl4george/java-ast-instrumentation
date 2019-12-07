@@ -1,10 +1,18 @@
 package parser.instrumentation
 
-
 import org.eclipse.jdt.core.dom._
 import parser.utils.{Attribute, ExpressionUtils}
 
+/**
+ * The Control structures Instrumentor class.
+ * Identifies the attributes needed for Switch, if-else if, while, for, do-while, for each control statements.
+ */
 class ControlInstrum() {
+  /**
+   * Returns the type of the statement and a list of attributes depending on the type of statement.
+   * @param statement
+   * @return
+   */
 
   def controlInstrumHelper(statement: Statement) = {
     val (expression: Option[Expression], name: Option[String]) = statement.getNodeType match {
@@ -17,6 +25,7 @@ class ControlInstrum() {
       case _ => (None, None)
     }
 
+    //Recurse on the expression part of each of these statements to identify appropriate attributes.
     val attributes: List[Attribute] = ExpressionUtils.recurseExpression(expression.get)
     (attributes, name.getOrElse("Unknown"))
   }
