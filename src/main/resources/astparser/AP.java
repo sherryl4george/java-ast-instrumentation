@@ -1,5 +1,7 @@
 package astparser;
 
+import org.json.JSONObject;
+
 public class AP {
     String type;
     String name;
@@ -40,5 +42,13 @@ public class AP {
         return "type=" + type +
                 ", name=" + name +
                 ", value=" + value ;
+    }
+
+    public JSONObject toJSON() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", type);
+        jsonObject.put("name", name);
+        jsonObject.put("value", value);
+        return jsonObject;
     }
 }

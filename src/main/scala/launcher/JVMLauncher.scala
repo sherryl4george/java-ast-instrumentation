@@ -10,12 +10,20 @@ import com.sun.tools.jdi.SunCommandLineLauncher
 
 import scala.jdk.CollectionConverters._
 
+/**
+ * The JVM launcher class.
+ * Responsible for launching the JVM and execute the instrumented code.
+ */
 case class JVMLauncher(){
   private [this] var connector: LaunchingConnector = null
   private [this] var connectorArgs: util.Map[String, Connector.Argument] =  new util.HashMap[String,Connector.Argument]()
   private [this] var process: Process = null
   private [this] var jvm: VirtualMachine = null
 
+  /**
+   * Gets the JVM connector and creates connector arguments.
+   * @param arguments
+   */
   def init(arguments: Map[String, String]){
     val connectorEither = getConnector()
     getConnector match {
@@ -25,7 +33,9 @@ case class JVMLauncher(){
     connectorArgs = initConnectArgs(arguments)
   }
 
-  // Open JVM
+  /**
+   * Start the JVM
+   */
   def start(): Unit = {
     launchTarget match {
       case Right(newJVM) => {
@@ -38,10 +48,18 @@ case class JVMLauncher(){
     }
   }
 
+  /**
+   * Shutdown the JVM
+   */
   def shutdown(): Unit = {
     jvm.dispose()
   }
 
+  /**
+   * Initialize JVM connector arguments.
+   * @param arguments
+   * @return
+   */
   private def initConnectArgs(arguments: Map[String, String]) = {
     val defaultArgs = connector.defaultArguments
     arguments.keys.foreach(key => {
@@ -54,12 +72,16 @@ case class JVMLauncher(){
     defaultArgs
   }
 
+  /**
+   * Launch the JVM
+   * @return
+   */
   private def launchTarget: Either[String, VirtualMachine] = {
     try {
       val vm = connector.launch(connectorArgs)
       process = vm.process
       displayRemoteOutput(process.getErrorStream)
-      displayRemoteOutput(process.getInputStream)
+//      displayRemoteOutput(process.getInputStream)
       Right(vm)
     } catch {
       case ioe: IOException => Left("Unable to launch target VM." + ioe.getMessage)
@@ -71,6 +93,10 @@ case class JVMLauncher(){
     }
   }
 
+  /**
+   * Get the JVM Connector.
+   * @return
+   */
   private def getConnector(): Either[String, LaunchingConnector] = {
     Bootstrap.virtualMachineManager.allConnectors.asScala
       .toList
