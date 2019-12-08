@@ -2,18 +2,17 @@ package visitors
 
 import org.eclipse.jdt.core.dom.{AST, ASTParser, ASTVisitor, CompilationUnit}
 import org.scalatest.FunSuite
-import parser.visitors.DoStatementVisitor
+import parser.visitors.VDStatementVisitor
 
 class TestVDSStatementVisitor extends FunSuite{
-  test("DoStatementVisitor Initialization"){
-    val doStatementVisitor = new DoStatementVisitor
-    assert(doStatementVisitor.isInstanceOf[ASTVisitor])
-    assert(doStatementVisitor.getDoStatements.length == 0)
+  test("VDSStatementVisitor Initialization"){
+    val vdsStatementVisitor = new VDStatementVisitor
+    assert(vdsStatementVisitor.isInstanceOf[ASTVisitor])
+    assert(vdsStatementVisitor.getVariableDeclarationStatements.length == 0)
 
   }
 
-  test("DoStatementVisitor Visit Do in a file without DO"){
-
+  test("VDSStatementVisitor Visit VDS in a file without VDS"){
     val sourceCode = """class Test {
                        |    private static void doSomething() {
                        |        while(true){
@@ -26,20 +25,15 @@ class TestVDSStatementVisitor extends FunSuite{
     parser.setSource(sourceCode.toCharArray)
     parser.setKind(ASTParser.K_COMPILATION_UNIT)
     val cu = parser.createAST(null).asInstanceOf[CompilationUnit]
-    val doStatementVisitor = new DoStatementVisitor
-    cu.accept(doStatementVisitor)
-    assert(doStatementVisitor.getDoStatements.length == 0)
+    val vdsStatementVisitor = new VDStatementVisitor
+    cu.accept(vdsStatementVisitor)
+    assert(vdsStatementVisitor.getVariableDeclarationStatements.length == 0)
   }
 
   test("DoStatementVisitor Visit Do in a file with single DO"){
     val sourceCode = """class Test {
                        |    private static void doSomething() {
-                       |        do{
-                       |            System.out.println("test");
-                       |        } while (false);
-                       |        while(true){
-                       |
-                       |        }
+                       |    int i = 0, j = 5, k = 7;
                        |    }
                        |}""".stripMargin
 
@@ -47,27 +41,20 @@ class TestVDSStatementVisitor extends FunSuite{
     parser.setSource(sourceCode.toCharArray)
     parser.setKind(ASTParser.K_COMPILATION_UNIT)
     val cu = parser.createAST(null).asInstanceOf[CompilationUnit]
-    val doStatementVisitor = new DoStatementVisitor
-    cu.accept(doStatementVisitor)
-    assert(doStatementVisitor.getDoStatements.length == 1)
+    val vdsStatementVisitor = new VDStatementVisitor
+    cu.accept(vdsStatementVisitor)
+    assert(vdsStatementVisitor.getVariableDeclarationStatements.length == 1)
   }
 
-  test("DoStatementVisitor Visit Do in a file with nultiple DO in different methods"){
+  test("VDSStatementVisitor Visit  in a file with multiple VDS in different methods"){
     val sourceCode = """class Test {
                        |    private static void doSomething() {
-                       |        do{
-                       |            System.out.println("test");
-                       |        } while (false);
-                       |        while(true){
-                       |
-                       |        }
+                       |          int i = 0;
+                       |          int j = i + 2;
                        |    }
                        |    private static void doSomethingAgain() {
-                       |        do{
-                       |            System.out.println("test");
-                       |        } while (false);
-                       |        while(true){
-                       |
+                       |        int k = 5 + 7;
+                       |        int l = k;
                        |        }
                        |    }
                        |}""".stripMargin
@@ -76,8 +63,8 @@ class TestVDSStatementVisitor extends FunSuite{
     parser.setSource(sourceCode.toCharArray)
     parser.setKind(ASTParser.K_COMPILATION_UNIT)
     val cu = parser.createAST(null).asInstanceOf[CompilationUnit]
-    val doStatementVisitor = new DoStatementVisitor
-    cu.accept(doStatementVisitor)
-    assert(doStatementVisitor.getDoStatements.length == 2)
+    val vdsStatementVisitor = new VDStatementVisitor
+    cu.accept(vdsStatementVisitor)
+    assert(vdsStatementVisitor.getVariableDeclarationStatements.length == 4)
   }
 }

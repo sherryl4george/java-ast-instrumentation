@@ -53,7 +53,7 @@ class TestExpressionStatementVisitor extends FunSuite{
                        |      doSomethingAgain(x);
                        |    }
                        |    private static void doSomethingAgain(int x) {
-                       |        System.out.println(x);
+                       |      System.out.println(x);
                        |    }
                        |}""".stripMargin
 
@@ -63,7 +63,7 @@ class TestExpressionStatementVisitor extends FunSuite{
     val cu = parser.createAST(null).asInstanceOf[CompilationUnit]
     val expressionStatementVisitor = new ExpressionStatementVisitor
     cu.accept(expressionStatementVisitor)
-    assert(expressionStatementVisitor.getExpressionStatements.length == 2)
+    assert(expressionStatementVisitor.getExpressionStatements.length == 3)
   }
 }
 

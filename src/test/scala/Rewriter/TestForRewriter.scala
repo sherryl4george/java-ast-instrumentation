@@ -1,0 +1,5 @@
+package Rewriter
+
+class TestForRewriter {
+
+}

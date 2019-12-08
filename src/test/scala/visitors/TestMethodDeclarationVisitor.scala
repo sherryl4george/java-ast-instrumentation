@@ -2,35 +2,33 @@ package visitors
 
 import org.eclipse.jdt.core.dom.{AST, ASTParser, ASTVisitor, CompilationUnit}
 import org.scalatest.FunSuite
-import parser.visitors.WhileStatementVisitor
+import parser.visitors.MethodDeclarationVisitor
 
 class TestMethodDeclarationVisitor extends FunSuite{
-  test("WhileStatementVisitor Initialization"){
-    val forStatementVisitor = new WhileStatementVisitor
-    assert(forStatementVisitor.isInstanceOf[ASTVisitor])
-    assert(forStatementVisitor.getWhileStatements.length == 0)
-
+  test("MethodStatementVisitor Initialization"){
+    val methDeclVisitor = new MethodDeclarationVisitor
+    assert(methDeclVisitor.isInstanceOf[ASTVisitor])
+    assert(methDeclVisitor.getMethodDeclarations.length == 0)
   }
 
-  test("WhileStatementVisitor Visit For in a file without FOR"){
+  test("MethodStatementVisitor Visit without method declarations"){
 
     val sourceCode = """class Test {
-                       |    private static void doSomething() {
-                       |    }
+
                        |}""".stripMargin
 
     val parser = ASTParser.newParser(AST.JLS12)
     parser.setSource(sourceCode.toCharArray)
     parser.setKind(ASTParser.K_COMPILATION_UNIT)
     val cu = parser.createAST(null).asInstanceOf[CompilationUnit]
-    val whileStatementVisitor = new WhileStatementVisitor
-    cu.accept(whileStatementVisitor)
-    assert(whileStatementVisitor.getWhileStatements.length == 0)
+    val methDeclVisitor = new MethodDeclarationVisitor
+    cu.accept(methDeclVisitor)
+    assert(methDeclVisitor.getMethodDeclarations.length == 0)
   }
 
-  test("WhileStatementVisitor Visit While in a file with single While"){
+  test("MethodDeclaration Visit  in a file with single method declaration main"){
     val sourceCode = """class Test {
-                       |    private static void doSomething() {
+                       |    public static void main(String args[]) {
                        |        do {
                        |            System.out.println("test");
                        |        } while (false);
@@ -45,12 +43,12 @@ class TestMethodDeclarationVisitor extends FunSuite{
     parser.setSource(sourceCode.toCharArray)
     parser.setKind(ASTParser.K_COMPILATION_UNIT)
     val cu = parser.createAST(null).asInstanceOf[CompilationUnit]
-    val whileStatementVisitor = new WhileStatementVisitor
-    cu.accept(whileStatementVisitor)
-    assert(whileStatementVisitor.getWhileStatements.length == 1)
+    val methDeclVisitor = new MethodDeclarationVisitor
+    cu.accept(methDeclVisitor)
+    assert(methDeclVisitor.getMethodDeclarations.length == 1)
   }
 
-  test("WhileStatementVisitor Visit While in a file with multiple While in different methods"){
+  test("Method Declaration Visitor with multiple methods"){
     val sourceCode = """class Test {
                        |    private static void doSomething() {
                        |        do {
@@ -77,9 +75,9 @@ class TestMethodDeclarationVisitor extends FunSuite{
     parser.setSource(sourceCode.toCharArray)
     parser.setKind(ASTParser.K_COMPILATION_UNIT)
     val cu = parser.createAST(null).asInstanceOf[CompilationUnit]
-    val whileStatementVisitor = new WhileStatementVisitor
-    cu.accept(whileStatementVisitor)
-    assert(whileStatementVisitor.getWhileStatements.length == 2)
+    val methDeclVisitor = new MethodDeclarationVisitor
+    cu.accept(methDeclVisitor)
+    assert(methDeclVisitor.getMethodDeclarations.length == 2)
   }
 }
 
