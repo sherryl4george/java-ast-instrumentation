@@ -1,31 +1,86 @@
 import java.io.File
 import java.nio.file.Paths
 
+import ServerLaunch.getClass
 import org.apache.commons.io.FileUtils
 import parser.converters.{BlockConverter, DoStatementCon, FinalConverter, ForStatementCon, WhileStatementCon}
 import parser.instrumentation._
 import parser.utils.{ASTParserLocal, FileHelper}
 import com.typesafe.scalalogging.LazyLogging
 import com.typesafe.config.{ConfigFactory, ConfigList, ConfigRenderOptions}
-import launcher.AntBuilder
+import launcher.{AntBuilder, WSServer}
+
+import scala.io.StdIn
 
 /**
 The Main application - The starting point for the application.
  **/
 object Main extends App with LazyLogging {
+  /**
+   * We need to invoke the server and client for the program to run
+   * the component to invoke is passed as a command line argument
+   * Invoke the server or INstrumDriver based on which component is
+   * requested
+   */
+  if(args.length != 0){
+    args(0).toLowerCase match {
+      case "server" => new WSServer
+      case "instrum" => getUserInput()
+      case _ => println("Invalid option: Valid options: server / instrum")
+    }
+  }
+  else
+    println("No parameters specified: Valid options: server / instrum")
 
-  //Retrieve the config file.
-  private final val config  = ConfigFactory.load("projects/project1.conf")
-
-  //invoke the init method to initialize from config.
-  driver()
+  /**
+   * Get the user input to select a config file to run
+   */
+  def getUserInput(): Unit = {
+    // Get all files in the resources/projects folder and ask the user which project to run
+    println(
+      """
+        |***************************************************************************************************************
+        |                                         Java Instrumentation Application
+        |***************************************************************************************************************
+        |Choose a config file from below to run the instrumentation
+        |
+        |To add a new project to the list add a new .conf file to the resources/projects folder with details as
+        |specified in the documentation
+        |
+        |***************************************************************************************************************
+        |""".stripMargin)
+    val confFileList = FileHelper.getFilesByExtension(getClass.getResource("projects").getPath, "conf").zipWithIndex
+    confFileList.foreach {
+      case(el, i) => println(i+1 + ": " + el.getName)
+    }
+    println(0 + ": Exit")
+    try {
+      val option = StdIn.readInt()
+      if (option < 0 || option > confFileList.length) {
+        println(s"\nPlease enter a value between 0 and ${confFileList.length}")
+        getUserInput()
+      }
+      else if (option == 0)
+        sys.exit()
+      else
+        driver(confFileList(option-1)._1.getName)
+    }
+    catch {
+      case _: NumberFormatException =>
+        println("\nInvalid value entered. Please try again!\n")
+    }
+  }
 
   /**
    * Initialize and read configuration as needed.
    * Invoke instrumentation
    * Compile and Run JVM
    */
-  def driver() = {
+  def driver(configPath: String) = {
+
+    //Retrieve the config file.
+    val config  = ConfigFactory.load(Paths.get("projects", configPath).toString)
+
     //Read sources
     val root = config.getString("compile.root")
     val sources = Paths.get(root,config.getString("compile.srcDir")).toString

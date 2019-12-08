@@ -1,4 +1,4 @@
-name := "cs474.cp_test"
+name := "cs474.cp"
 
 version := "0.1"
 
