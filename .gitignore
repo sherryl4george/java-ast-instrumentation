@@ -1,6 +1,7 @@
 # Add projects folder here remove when not needed
 projects
 src/main/resources/projects/project1.conf
+tracefiles
 # Created by https://www.gitignore.io/api/sbt,intellij
 # Edit at https://www.gitignore.io/?templates=sbt,intellij
 
