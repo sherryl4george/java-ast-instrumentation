@@ -25,7 +25,7 @@ class FinalConverter(val cu: CompilationUnit) {
     //Add import statements. This is necessary to import the Template class and its required parameters.
     val lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY)
     val textToAdd = cu.getAST.newTextElement
-    textToAdd.setText("import astparser.*;")
+    textToAdd.setText("import astparser.*;\n")
     lrw.insertLast(textToAdd, null)
     rewriter
   }

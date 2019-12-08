@@ -156,7 +156,8 @@ object ExpressionUtils{
           val test = simpleName.toString
           val (binding, declaringMethod) = Binding.getBindingLabel(simpleName.resolveBinding())
           val sdf = expression.asInstanceOf[SimpleName].getFullyQualifiedName
-          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "SimpleName"), utils.wrapStringInQuotes(binding+"."+expression.asInstanceOf[SimpleName].getFullyQualifiedName), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
+//          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "SimpleName"), utils.wrapStringInQuotes(binding+"."+expression.asInstanceOf[SimpleName].getFullyQualifiedName), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
+          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "SimpleName"), utils.wrapStringInQuotes(binding), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
         }
 
         //Recurse on the operand. They can be a simple name or a method invocation.
