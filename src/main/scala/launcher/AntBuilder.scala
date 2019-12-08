@@ -58,9 +58,6 @@ case class AntBuilder(config: Config){
      * @param confFile
      */
     def invoke(target:String, jarList: String, mainClass : String, argList : String, confFile:String) = {
-      //Overwrite the config file to hold the trace file name, per input.
-      val lines =  "fileName = " + utils.wrapStringInQuotes(mainClass.replace(".","_") + "_" + AntBuilder.increment()+".txt")
-      FileHelper.writeFile(lines,confFile)
 
       //Create arguments for invoking the JVM
       val map = Map(

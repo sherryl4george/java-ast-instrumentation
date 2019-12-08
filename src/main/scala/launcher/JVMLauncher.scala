@@ -81,7 +81,7 @@ case class JVMLauncher(){
       val vm = connector.launch(connectorArgs)
       process = vm.process
       displayRemoteOutput(process.getErrorStream)
-//      displayRemoteOutput(process.getInputStream)
+      displayRemoteOutput(process.getInputStream)
       Right(vm)
     } catch {
       case ioe: IOException => Left("Unable to launch target VM." + ioe.getMessage)

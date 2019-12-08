@@ -1,14 +1,20 @@
 package launcher
 
 import java.nio.file.Paths
+import java.time.{LocalDateTime, ZoneId}
+import java.time.format.DateTimeFormatter
 
+import akka.NotUsed
 import akka.actor._
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.ws.{Message, TextMessage}
+import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives.{complete, get, handleWebSocketMessages, path, pathEndOrSingleSlash}
+import akka.http.scaladsl.server.PathMatcher
+import akka.http.scaladsl.server.PathMatchers.LongNumber
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.{Flow, Sink}
 import com.typesafe.config.ConfigFactory
+import launcher.Total.{Ack, Complete, Init, Parse}
 import parser.utils.FileHelper
 import play.api.libs.json.{JsArray, Json}
 
@@ -17,32 +23,20 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.io.StdIn
-import scala.util.{Failure, Success}
+import scala.language.postfixOps
 
-class WSServer {
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
+object Total {
+  case object Init
+  case object Ack
+  case object Complete
+  case class Parse(value: Seq[String], lastMessage: Long)
+}
+
+class Total extends Actor {
   val dataStore: mutable.HashMap[String,List[BindingData]] = mutable.HashMap.empty[String,List[BindingData]]
   val trace: mutable.StringBuilder = new mutable.StringBuilder()
 
-  val echoService: Flow[Message, Message, _] = Flow[Message].mapAsync(parallelism = 5) {
-    case TextMessage.Strict(msg) => {
-      Future.successful(TextMessage(parseJSONMessage(msg)))
-    }
-
-    case TextMessage.Streamed(stream) =>
-
-      stream
-        .limit(Int.MaxValue) // Max frames we are willing to wait for
-        .completionTimeout(50 seconds) // Max time until last frame
-        .runFold("")(_ ++ _) // Merges the frames
-        .flatMap { (msg: String) => {
-        Future.successful(TextMessage(parseJSONMessage(msg)))
-      }
-      }
-  }
-
-  def parseJSONMessage(jsonString: String) : String  = {
+  def parseJSONMessage(jsonString: String)   = {
     val json = Json.parse(jsonString)
     val line = (json \ "line").get
     val seenAt = (json \ "statementType").get
@@ -64,42 +58,67 @@ class WSServer {
       }
       case _ =>
     }
-    "Completed"
   }
+
+  def writeData(): Unit = {
+    val bindings = new mutable.StringBuilder()
+    dataStore.foreach{case(key, value)=>{
+      bindings.append(s"\n========= $key =========\n${value.mkString("\n")}\n")
+    }}
+    dataStore.clear()
+    //            println(dataStore)
+    //    println(trace.toString)
+    //    println(bindings.toString)
+
+    val fmt = DateTimeFormatter.ofPattern("uuuu_MM_dd_HH_mm_ss_SSS")
+    val time = LocalDateTime.now(ZoneId.of("America/New_York")).format(fmt)
+    val fileName = time + ".txt"
+    FileHelper.writeFile(trace.toString, Paths.get("tracefiles","trace_"+fileName).toString)
+    FileHelper.writeFile(bindings.toString, Paths.get("tracefiles","bindings_"+fileName).toString)
+    trace.clear()
+  }
+  override def receive: Receive = {
+    case Init =>
+      sender ! Ack
+    case Parse(value, _) =>
+      value.map(parseJSONMessage)
+      sender ! Ack
+    case Complete => {
+      writeData()
+      println(s"WebSocket terminated")
+    }
+  }
+}
+
+class WSServer {
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+  val total = system.actorOf(Props[Total], "total")
+
+  val echoService = (sink: Sink[Parse, NotUsed]) =>
+    Flow[Message]
+      .collect {
+        case TextMessage.Strict(text) =>
+          Future.successful(text)
+        case TextMessage.Streamed(textStream) =>
+          textStream.runFold("")(_ + _)
+            .flatMap(Future.successful)
+      }
+      .mapAsync(1)(identity)
+      .groupedWithin(1000, 1 second)
+      .map(messages => Parse(messages, 0))
+      .alsoTo(sink)
+      .map(_ => TextMessage("Ack"))
 
   import akka.http.scaladsl.server.RouteConcatenation._
   val route = get {
     pathEndOrSingleSlash {
       complete("Welcome to websocket server")
     }
-  } ~
-    path("greeter") {
-      val greeterRoute = echoService.watchTermination() { (_, done) =>
-        done.onComplete {
-          case Success(_) => {
-            val bindings = new mutable.StringBuilder()
-            dataStore.foreach{case(key, value)=>{
-              bindings.append(s"\n========= $key =========\n${value.mkString("\n")}\n")
-            }}
-            dataStore.clear()
-//            println(dataStore)
-            println(trace.toString)
-            println("******")
-            println(bindings.toString)
-
-            // Get current name to save
-            val config = ConfigFactory.load("server/filename.conf")
-            val fileName = config.getString("fileName")
-            FileHelper.writeFile(trace.toString, Paths.get("tracefiles","trace_"+fileName).toString)
-            FileHelper.writeFile(bindings.toString, Paths.get("tracefiles","bindings_"+fileName).toString)
-            trace.clear()
-          }
-          case Failure(ex) =>
-            println(s"Completed with failure : $ex")
-        }
-      }
-      handleWebSocketMessages(greeterRoute)
-    }
+  } ~ path("instrumserver") {
+    val sink = Sink.actorRefWithAck(total, Init, Ack, Complete)
+    handleWebSocketMessages(echoService(sink))
+  }
   //#websocket-request-handling
   val bindingFuture =
     Http().bindAndHandle(route, interface = "localhost", port = 8080)
@@ -111,8 +130,4 @@ class WSServer {
   bindingFuture
     .flatMap(_.unbind()) // trigger unbinding from the port
     .onComplete(_ => system.terminate()) // and shutdown when done
-
-
 }
-
-
