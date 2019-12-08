@@ -30,7 +30,7 @@ object ExpressionUtils{
       case _: PrefixExpression => ""
       case x: QualifiedName => ""
       case _: SuperMethodInvocation => ""
-      case _: SuperMethodReference => ""
+//      case _: SuperMethodReference => ""
       case _: ThisExpression => ""
       case _: TypeMethodReference => ""
       case _: VariableDeclarationExpression => ""
@@ -192,7 +192,7 @@ object ExpressionUtils{
             List(x.getQualifier.getFullyQualifiedName, x.getName.getFullyQualifiedName).mkString("."))
         }
         case _: SuperMethodInvocation => {}
-        case _: SuperMethodReference => {}
+//        case _: SuperMethodReference => {}
         case _: ThisExpression => {}
         case _: TypeMethodReference => {}
         case _: VariableDeclarationExpression => {}

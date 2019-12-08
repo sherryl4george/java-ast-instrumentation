@@ -1,13 +1,13 @@
 package launcher
 
-import java.io.File
 import java.nio.file.Paths
 import java.util
-import scala.jdk.CollectionConverters._
+
 import com.typesafe.config.Config
-import org.apache.commons.io.FileUtils
 import org.apache.tools.ant.{BuildEvent, DefaultLogger, Project, ProjectHelper}
-import parser.utils.{FileHelper, utils}
+import parser.utils.FileHelper
+
+import scala.jdk.CollectionConverters._
 
 /**
  * The AntBuilder class.
@@ -35,8 +35,6 @@ case class AntBuilder(config: Config){
      * Invoke the JVM by passing appropriate parameters.
      */
     def executeJava(): Unit = {
-      //Create a temporary config file. This is per input to dump the trace data obtained from the source program.
-      val confFile = new File(getClass.getResource("/server/filename.conf").toURI)
 
       //Read appropriate values from config to invoke the JVM launch.
       val root = config.getString("compile.root")
@@ -46,7 +44,7 @@ case class AntBuilder(config: Config){
       val main = config.getString("run.mainClass")
 
       //Invoke JVM on each input.
-      config.getAnyRefList("run.arguments").forEach(x => invoke(targetDir,jarList,main,x.asInstanceOf[util.ArrayList[String]].asScala.toList.mkString(" "),confFile.toString))
+      config.getAnyRefList("run.arguments").forEach(x => invoke(targetDir,jarList,main,x.asInstanceOf[util.ArrayList[String]].asScala.toList.mkString(" ")))
     }
 
     /**
@@ -55,9 +53,8 @@ case class AntBuilder(config: Config){
      * @param jarList
      * @param mainClass
      * @param argList
-     * @param confFile
-     */
-    def invoke(target:String, jarList: String, mainClass : String, argList : String, confFile:String) = {
+0     */
+    def invoke(target:String, jarList: String, mainClass : String, argList : String) = {
 
       //Create arguments for invoking the JVM
       val map = Map(
@@ -97,7 +94,9 @@ case class AntBuilder(config: Config){
       p.executeTarget(p.getDefaultTarget)
       p.fireBuildFinished(null)
     } catch {
-      case e: Exception => println("Build Failed with error ->" + e)
+      case e: Exception =>
+        e.printStackTrace()
+        println("Build Failed with error ->" + e)
 
     }
   }
