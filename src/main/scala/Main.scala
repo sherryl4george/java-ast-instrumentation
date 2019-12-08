@@ -42,14 +42,14 @@ object Main extends App with LazyLogging {
     FileUtils.deleteDirectory(new File(Paths.get(src.toString, "astparser").toUri))
 
     // Create the old sources directory to move the original source.
-    val oldSrc = new File(Paths.get(src.getParent, config.getString("resources.oldSrc")).toUri)
+    val oldSrc = new File(Paths.get(src.getParent, "oldSrc").toUri)
     FileUtils.forceMkdir(oldSrc)
 
     //Copy jars used by instrumenter before proceeding
     FileUtils.copyDirectory(new File(dependencyJarsDir.toURI), new File(Paths.get(jarsDir).toString), true)
 
-    //Begin instrumentation for each Java file in the sources directory.
-//    FileHelper.getFilesByExtension(sources,"java").map(instrumentBegin(sources,oldSrc,_))
+    // Begin instrumentation for each Java file in the sources directory.
+    FileHelper.getFilesByExtension(sources,"java").map(instrumentBegin(sources,oldSrc,_))
 
     // Copy fresh ast parser directory to source folder. This is for the purpose of executing the instrumented source application.
     FileUtils.copyDirectoryToDirectory(new File(astParserDir.toURI), src)

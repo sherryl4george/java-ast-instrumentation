@@ -14,29 +14,29 @@ object ExpressionUtils{
    */
   def getTextForExpression(expression: Expression): String = {
     expression match {
-      case _: ArrayCreation => utils.wrapStringInQuotes("")
-      case _: ArrayInitializer => utils.wrapStringInQuotes("")
-      case _: ArrayAccess => utils.wrapStringInQuotes("ArrayAccess")
-      case x: Assignment => utils.wrapStringInQuotes("Assign")
-      case _: ClassInstanceCreation => utils.wrapStringInQuotes("ClassInstanceCreation")
-      case _: ConditionalExpression => utils.wrapStringInQuotes("")
-      case x: FieldAccess => utils.wrapStringInQuotes("")
-      case _: InfixExpression => utils.wrapStringInQuotes("")
-      case _: MethodInvocation => utils.wrapStringInQuotes("MethodInvocation")
-      case _: ParenthesizedExpression => utils.wrapStringInQuotes("")
-      case _: MethodReference => utils.wrapStringInQuotes("")
-      case _: SimpleName => utils.wrapStringInQuotes("")
-      case _: PostfixExpression => utils.wrapStringInQuotes("")
-      case _: PrefixExpression => utils.wrapStringInQuotes("")
-      case x: QualifiedName => utils.wrapStringInQuotes("")
-      case _: SuperMethodInvocation => utils.wrapStringInQuotes("")
-      case _: SuperMethodReference => utils.wrapStringInQuotes("")
-      case _: ThisExpression => utils.wrapStringInQuotes("")
-      case _: TypeMethodReference => utils.wrapStringInQuotes("")
-      case _: VariableDeclarationExpression => utils.wrapStringInQuotes("")
-      case x: NumberLiteral => utils.wrapStringInQuotes("")
-      case _: NullLiteral => utils.wrapStringInQuotes("")
-      case _ => utils.wrapStringInQuotes("")
+      case _: ArrayCreation => ""
+      case _: ArrayInitializer => ""
+      case _: ArrayAccess => "ArrayAccess"
+      case x: Assignment => "Assign"
+      case _: ClassInstanceCreation => "ClassInstanceCreation"
+      case _: ConditionalExpression => ""
+      case x: FieldAccess => ""
+      case _: InfixExpression => ""
+      case _: MethodInvocation => "MethodInvocation"
+      case _: ParenthesizedExpression => ""
+      case _: MethodReference => ""
+      case _: SimpleName => ""
+      case _: PostfixExpression => ""
+      case _: PrefixExpression => ""
+      case x: QualifiedName => ""
+      case _: SuperMethodInvocation => ""
+      case _: SuperMethodReference => ""
+      case _: ThisExpression => ""
+      case _: TypeMethodReference => ""
+      case _: VariableDeclarationExpression => ""
+      case x: NumberLiteral => ""
+      case _: NullLiteral => ""
+      case _ => ""
     }
   }
 
