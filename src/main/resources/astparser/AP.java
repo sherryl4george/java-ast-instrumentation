@@ -29,12 +29,12 @@ public class AP {
     public AP(String type, String name, Object value){
         this.type = type;
         this.name = name;
-        this.value = value.toString();
+        this.value = value == null ? "null" : value.toString();
     }
     public AP(String type, String name, String value){
         this.type = type;
         this.name = name;
-        this.value = value.toString();
+        this.value = value == null ? "null" : value.toString();
     }
 
     @Override

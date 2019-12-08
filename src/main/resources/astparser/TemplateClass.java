@@ -10,7 +10,7 @@ public class TemplateClass {
     /**
      * The echo server on websocket.org.
      */
-    private static final String SERVER = "ws://localhost:8080/greeter";
+    private static final String SERVER = "ws://localhost:8080/instrumserver";
 
     /**
      * The timeout value in milliseconds for socket connection.
@@ -23,7 +23,7 @@ public class TemplateClass {
      */
     private static WebSocket webSocket;
 
-    static {
+    static  {
         try {
             webSocket = connect();
         } catch (IOException | WebSocketException e) {
@@ -39,9 +39,7 @@ public class TemplateClass {
                 .createSocket(SERVER)
                 .addListener(new WebSocketAdapter() {
                     // A text message arrived from the server.
-                    public void onTextMessage(WebSocket websocket, String message) {
-                        System.out.println(message);
-                    }
+                    public void onTextMessage(WebSocket websocket, String message) {}
                 })
                 .addExtension(WebSocketExtension.PERMESSAGE_DEFLATE)
                 .connect();

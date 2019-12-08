@@ -27,25 +27,32 @@ object Main extends App with LazyLogging {
    */
   def driver() = {
     //Read sources
-//    val root = config.getString("compile.root")
-//    val sources = Paths.get(root,config.getString("compile.srcDir")).toString
-//    val src = new File(sources)
-//
-//    //Get the AST Parser directory. This is where the TemplateClass.java (holds instrum method) file is stored.
-//    val astParserDir = config.getString("resources.astparser")
-//
-//    // Delete ast parser directory. This will be recreated later.
-//    FileUtils.deleteDirectory(new File(Paths.get(src.toString, astParserDir).toUri))
-//
-//    // Create the old sources directory to move the original source.
-//    val oldSrc = new File(Paths.get(src.getParent, config.getString("resources.oldSrc")).toUri)
-//    FileUtils.forceMkdir(oldSrc)
-//
-//    //Begin instrumentation for each Java file in the sources directory.
+    val root = config.getString("compile.root")
+    val sources = Paths.get(root,config.getString("compile.srcDir")).toString
+    val jarsDir = Paths.get(root,config.getString("compile.jarFolder")).toString
+    val src = new File(sources)
+
+    //Get the AST Parser directory. This is where the TemplateClass.java (holds instrum method) file is stored.
+    val astParserDir = getClass.getResource("astparser")
+
+    //Get the folder where jars are save
+    val dependencyJarsDir = getClass.getResource("dependencyjar")
+
+    // Delete ast parser directory. This will be recreated later.
+    FileUtils.deleteDirectory(new File(Paths.get(src.toString, "astparser").toUri))
+
+    // Create the old sources directory to move the original source.
+    val oldSrc = new File(Paths.get(src.getParent, config.getString("resources.oldSrc")).toUri)
+    FileUtils.forceMkdir(oldSrc)
+
+    //Copy jars used by instrumenter before proceeding
+    FileUtils.copyDirectory(new File(dependencyJarsDir.toURI), new File(Paths.get(jarsDir).toString), true)
+
+    //Begin instrumentation for each Java file in the sources directory.
 //    FileHelper.getFilesByExtension(sources,"java").map(instrumentBegin(sources,oldSrc,_))
-//
-//    // Copy fresh ast parser directory to source folder. This is for the purpose of executing the instrumented source application.
-//    FileUtils.copyDirectoryToDirectory(new File(getClass.getResource(astParserDir).toURI), src)
+
+    // Copy fresh ast parser directory to source folder. This is for the purpose of executing the instrumented source application.
+    FileUtils.copyDirectoryToDirectory(new File(astParserDir.toURI), src)
 
     //Compile and launch JVM.
     AntBuilder(config).compileAndLaunchJVM()
