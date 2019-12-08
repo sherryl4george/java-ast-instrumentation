@@ -20,7 +20,7 @@ object ASTParserLocal {
     parser.setBindingsRecovery(true)
     parser.setUnitName(fileName)
 
-      //Set source from source file, if the passed src string is empty.
+      //Set source from source file, if the passed testSrc string is empty.
     if (sourceCode.length == 0)
       parser.setSource(FileHelper.readFile(fileName).toCharArray)
     else
