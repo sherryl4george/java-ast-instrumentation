@@ -1,5 +1,6 @@
 package parser.converters
 
+import com.typesafe.scalalogging.LazyLogging
 import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.visitors.ForStatementVisitor
@@ -24,7 +25,7 @@ import parser.visitors.ForStatementVisitor
   * Also, only an expression in the For statement is converted. We do not change the initializer and updater.
   * f() + f() < 10 won't be handled in current implementation
   */
-class ForStatementCon(val cu: CompilationUnit) {
+class ForStatementCon(val cu: CompilationUnit) extends LazyLogging {
     private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   /**
@@ -32,7 +33,9 @@ class ForStatementCon(val cu: CompilationUnit) {
    * @return
    */
   def startBlockConvert(): ASTRewrite ={
+    logger.debug("Begin For Block re-write")
     forBlock()
+    logger.debug("For block re-write ends")
     rewriter
   }
 
@@ -43,6 +46,7 @@ class ForStatementCon(val cu: CompilationUnit) {
     val forStatementVisitor = new ForStatementVisitor
     cu.accept(forStatementVisitor)
     val forStatements = forStatementVisitor.getForStatements
+    logger.info("Total number of for-statements to be considered for re-writing - " + forStatements.length)
     forStatements.map(forBlockHelper(_))
   }
 
@@ -75,6 +79,7 @@ class ForStatementCon(val cu: CompilationUnit) {
      */
     def convert(operand: Expression, parent: ASTNode, forStatement: ForStatement): Unit ={
       if (operand.isInstanceOf[MethodInvocation]) {
+        logger.info("This For-statement is considered for re-writing")
         val operandMethod = operand.asInstanceOf[MethodInvocation]
 
         //X() < 2 ----> int for1 = X();

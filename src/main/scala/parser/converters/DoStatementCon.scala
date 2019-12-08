@@ -1,5 +1,6 @@
 package parser.converters
 
+import com.typesafe.scalalogging.LazyLogging
 import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.visitors.DoStatementVisitor
@@ -21,7 +22,7 @@ import parser.visitors.DoStatementVisitor
   * having only one method invocation on either side of operator
   * f() + f() < 10 won't be handled in the current implementation
   */
-class DoStatementCon(val cu: CompilationUnit) {
+class DoStatementCon(val cu: CompilationUnit) extends LazyLogging {
     private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   /**
@@ -29,7 +30,9 @@ class DoStatementCon(val cu: CompilationUnit) {
    * @return
    */
   def startBlockConvert(): ASTRewrite ={
+    logger.debug("Do statement rewrite begin")
     doBlock()
+    logger.debug("Do statement rewrite end")
     rewriter
   }
 
@@ -40,6 +43,7 @@ class DoStatementCon(val cu: CompilationUnit) {
     val doStatementVisitor = new DoStatementVisitor
     cu.accept(doStatementVisitor)
     val doStatements = doStatementVisitor.getDoStatements
+    logger.info("Total do-statements to be considered for re-writing - " + doStatements.length)
     doStatements.map(doBlockHelper(_))
   }
 
@@ -73,6 +77,7 @@ class DoStatementCon(val cu: CompilationUnit) {
      */
     def convert(operand: Expression, parent: ASTNode, doStatement: DoStatement): Unit ={
       if (operand.isInstanceOf[MethodInvocation]) {
+        logger.info("Found a candidate for re-write do statement")
         val operandMethod = operand.asInstanceOf[MethodInvocation]
 
         //X() < 2 ----> int wh1 = X();
@@ -85,6 +90,7 @@ class DoStatementCon(val cu: CompilationUnit) {
         val lrw = rewriter.getListRewrite(doBody, Block.STATEMENTS_PROPERTY)
         lrw.insertLast(doStatement.getAST.newExpressionStatement(newAssignment), null)
       }
+      logger.debug("Conversion for operand ends")
     }
 
     /**

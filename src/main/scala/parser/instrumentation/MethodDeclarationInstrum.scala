@@ -1,5 +1,7 @@
 package parser.instrumentation
 
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.jdk.CollectionConverters._
 import org.eclipse.jdt.core.dom.{MethodDeclaration, SingleVariableDeclaration}
 import parser.utils.{Attribute, ExpressionUtils}
@@ -9,7 +11,7 @@ import parser.utils.{Attribute, ExpressionUtils}
  * Identifies all method declarations.
  * This returns a list of attributes that are used in the Instrumentation statement.
  */
-class MethodDeclarationInstrum {
+class MethodDeclarationInstrum  extends LazyLogging{
   /**
    * Identifies attributes for all method declarations with parameters.    *
    * @param methodDeclaration
@@ -22,6 +24,7 @@ class MethodDeclarationInstrum {
     parameters.map(x=>{
       attributes = attributes ++ ExpressionUtils.recurseExpression(x.getName)
     })
+    logger.info("Total attributes to be added in method declaration instrumentation - " + attributes.length)
     attributes
   }
 }

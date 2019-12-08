@@ -1,5 +1,6 @@
 package parser.converters
 
+import com.typesafe.scalalogging.LazyLogging
 import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.visitors.MethodDeclarationVisitor
@@ -11,7 +12,7 @@ import scala.jdk.CollectionConverters._
  * This is invoked after instrumentation is done and all instrumentation statements are added.
  * @param cu
  */
-class FinalConverter(val cu: CompilationUnit) {
+class FinalConverter(val cu: CompilationUnit) extends LazyLogging{
   private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   /**
@@ -20,13 +21,16 @@ class FinalConverter(val cu: CompilationUnit) {
    */
   def startInstrum(): ASTRewrite ={
     //Instrument all method declarations.
+    logger.info("Begin adding changes to the Main() method")
     methodDeclarationInstrum()
-
+    logger.debug("Main modified with changes")
     //Add import statements. This is necessary to import the Template class and its required parameters.
+    logger.debug("Begin adding imports")
     val lrw = rewriter.getListRewrite(cu, CompilationUnit.IMPORTS_PROPERTY)
     val textToAdd = cu.getAST.newTextElement
     textToAdd.setText("import astparser.*;\n")
     lrw.insertLast(textToAdd, null)
+    logger.debug("Necessary imports added")
     rewriter
   }
 
@@ -54,6 +58,7 @@ class FinalConverter(val cu: CompilationUnit) {
 
     // Check if the current method is public static void main(String[] args]
     if(methodDeclaration.getName.getIdentifier.equals("main")){
+      logger.debug("Found main method")
       if(methodDeclaration.getReturnType2 != null
         && methodDeclaration.getReturnType2.isPrimitiveType
         && methodDeclaration.getReturnType2.asInstanceOf[PrimitiveType].getPrimitiveTypeCode == PrimitiveType.VOID){
@@ -66,6 +71,7 @@ class FinalConverter(val cu: CompilationUnit) {
               param.getType.asInstanceOf[ArrayType].getElementType.asInstanceOf[SimpleType].getName.toString.equals("String")) ||
               (param.isVarargs && param.getType.isSimpleType && param.getType.asInstanceOf[SimpleType].getName.toString.equals("String")) ){
                 // We have found the main
+                logger.info("This is the entry point - main() method")
                 val textToAdd = cu.getAST.newTextElement
 
                 //Add writeToFile() method to the main() method.

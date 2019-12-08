@@ -1,5 +1,6 @@
 package parser.converters
 
+import com.typesafe.scalalogging.LazyLogging
 import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.visitors.WhileStatementVisitor
@@ -20,7 +21,7 @@ import parser.visitors.WhileStatementVisitor
   * having only one method invocation on either side of operator
   * Say, f() + f() < 10 won't be handled in the current implementation.
   */
-class WhileStatementCon(val cu: CompilationUnit) {
+class WhileStatementCon(val cu: CompilationUnit) extends LazyLogging {
   private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   /**
@@ -28,7 +29,9 @@ class WhileStatementCon(val cu: CompilationUnit) {
    * @return
    */
   def startBlockConvert(): ASTRewrite = {
+    logger.debug("Begin while block re-write")
     whileBlock()
+    logger.debug("End while block re-write")
     rewriter
   }
 
@@ -39,6 +42,7 @@ class WhileStatementCon(val cu: CompilationUnit) {
     val whileStatementVisitor = new WhileStatementVisitor
     cu.accept(whileStatementVisitor)
     val whileStatemtemts = whileStatementVisitor.getWhileStatements
+    logger.info("The while statements that will be considered for re-write include -",whileStatemtemts.length)
     whileStatemtemts.map(whileBlockHelper(_))
   }
 
@@ -61,6 +65,7 @@ class WhileStatementCon(val cu: CompilationUnit) {
      */
     def convert(operand: Expression, parent: ASTNode, whileStatement: WhileStatement): Unit = {
       if (operand.isInstanceOf[MethodInvocation]) {
+        logger.debug("This while statement will be considered for re-write")
         val whileBody = whileStatement.getBody
         val operandMethod = operand.asInstanceOf[MethodInvocation]
 

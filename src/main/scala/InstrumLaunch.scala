@@ -11,71 +11,14 @@ import parser.utils.{ASTParserLocal, FileHelper}
 
 import scala.io.StdIn
 
-///**
-//The Main application - The starting point for the application.
-// **/
-//object Main extends App with LazyLogging {
-//  /**
-//   * We need to invoke the server and client for the program to run
-//   * the component to invoke is passed as a command line argument
-//   * Invoke the server or INstrumDriver based on which component is
-//   * requested
-//   */
-//  if(args.length != 0){
-//    args(0).toLowerCase match {
-//      case "server" => new WSServer
-//      case "instrum" => getUserInput()
-//      case _ => println("Invalid option: Valid options: server / instrum")
-//    }
-//  }
-//  else
-//    println("No parameters specified: Valid options: server / instrum")
-//=======
-
 /**
 The Main application - The starting point for the application.
-  **/
+ **/
 object InstrumLaunch extends App with LazyLogging {
-  //  launchComponent()
-  //  /**
-  //    * Two components are required for the code running.
-  //    * 1. Server - server listens to all logs through websocket and creates
-  //    *     a file for each client connected
-  //    * 2. Instrumenter - This is the code which instruments, compiles and runs the JVM
-  //    */
-  //  def launchComponent(): Unit = {
-  //    print(
-  //      """
-  //        |Select component to launch
-  //        |
-  //        |1. Server - Listens to data from instrum client
-  //        |2. Instrumenter - JAVA Instrumenter client
-  //        |0. Exit
-  //        |
-  //        |Please select an option:
-  //        |""".stripMargin)
-  //    try {
-  //      val option = StdIn.readInt()
-  //      option match {
-  //        case 1 => new WSServer
-  //        case 2 => driver()
-  //        case 0 => sys.exit()
-  //        case _ =>
-  //          println("\nPlease enter a value between 0 and 2!\n")
-  //          launchComponent
-  //
-  //      }
-  //    }
-  //    catch {
-  //      case _: NumberFormatException =>
-  //        println("\nInvalid value entered. Please try again!\n")
-  //        launchComponent
-  //    }
-  //  }
   getUserInput()
   /**
-    * Get the user input to select a config file to run
-    */
+   * Get the user input to select a config file to run
+   */
   def getUserInput(): Unit = {
     // Get all files in the resources/projectConf folder and ask the user which project to run
     println(
@@ -113,23 +56,24 @@ object InstrumLaunch extends App with LazyLogging {
   }
 
   /**
-    * Initialize and read configuration as needed.
-    * Invoke instrumentation
-    * Compile and Run JVM
-    */
-//  def driver(configPath: String) = {
-def driver(configPath: String) = {
+   * Initialize and read configuration as needed.
+   * Invoke instrumentation
+   * Compile and Run JVM
+   */
+  //  def driver(configPath: String) = {
+  def driver(configPath: String) = {
 
     //Retrieve the config file.
     val config  = ConfigFactory.parseFile(new File(configPath))
-    val config1  = ConfigFactory.load("server/filename.conf")
-    val x = config1.getString("fileName")
+
     //Read sources
     val rootRelativetoInstrumDir : Boolean = config.getBoolean("compile.rootRelativetoInstrumDir")
+    // Get the correct path
     val root = if(rootRelativetoInstrumDir)
-                  Paths.get(System.getProperty("user.dir"),config.getString("compile.root")).toString
-                else
-                  config.getString("compile.root")
+      Paths.get(System.getProperty("user.dir"),config.getString("compile.root")).toString
+    else
+      config.getString("compile.root")
+
     val sources = Paths.get(root,config.getString("compile.srcDir")).toString
     val jarsDirDest = Paths.get(root,config.getString("compile.jarFolder")).toString
     val src = new File(sources)
@@ -141,7 +85,7 @@ def driver(configPath: String) = {
     val jarsDirSrc = Paths.get(System.getProperty("user.dir"), "config/dependencyjar").toString
 
     // Delete ast parser directory. This will be recreated later.
-//    FileUtils.deleteDirectory(astParserDirSrc)
+    //    FileUtils.deleteDirectory(astParserDirSrc)
 
     // Create the old sources directory to move the original source.
     val oldSrc = new File(Paths.get(src.getParent, "oldSrc").toUri)
@@ -151,7 +95,7 @@ def driver(configPath: String) = {
     FileUtils.copyDirectory(new File(jarsDirSrc), new File(jarsDirDest), true)
 
     // Begin instrumentation for each Java file in the sources directory.
-//    FileHelper.getFilesByExtension(sources,"java").map(instrumentBegin(sources,oldSrc,_))
+    FileHelper.getFilesByExtension(sources,"java").map(instrumentBegin(sources,oldSrc,_))
 
     // Copy fresh ast parser directory to source folder. This is for the purpose of executing the instrumented source application.
     FileUtils.copyDirectoryToDirectory(astParserDirSrc, src)
@@ -162,11 +106,11 @@ def driver(configPath: String) = {
 
 
   /**
-    *
-    * The method that instruments a Java file.
-    * @param src
-    * @param file
-    */
+   *
+   * The method that instruments a Java file.
+   * @param src
+   * @param file
+   */
   def instrumentBegin(src: String, oldSrc : File, file: File) : Unit = {
 
     //Reads the source as a string and obtains the compilation unit from the AST of this source.
@@ -175,61 +119,61 @@ def driver(configPath: String) = {
     val originalCode = FileHelper.readFile(fileName)
 
     /**Convert all single lines to blocks and get the modified compilation unit.
-      * if(expression)
-      * i++;
-      * modified to
-      * if(expression) {
-      * i++; }
-      */
+     * if(expression)
+     * i++;
+     * modified to
+     * if(expression) {
+     * i++; }
+     */
 
     val blockRewriter = new BlockConverter(cu).startBlockConvert()
     val blockCode = FileHelper.getSourceCodeAsString(blockRewriter, originalCode)
     val blockCU = ASTParserLocal.getCU(src, "", fileName, blockCode)
 
     /**
-      * while statements are rewritten and a modified compilation unit is obtained.
-      * while(X() < 2){
-      * i++;
-      * }
-      * modified to
-      * int wh1 = X();
-      * while(wh1 < 2) {
-      * i++;
-      * wh1 = X();
-      * }
-      */
+     * while statements are rewritten and a modified compilation unit is obtained.
+     * while(X() < 2){
+     * i++;
+     * }
+     * modified to
+     * int wh1 = X();
+     * while(wh1 < 2) {
+     * i++;
+     * wh1 = X();
+     * }
+     */
 
     val whileRewriter = new WhileStatementCon(blockCU).startBlockConvert()
     val whileCode = FileHelper.getSourceCodeAsString(whileRewriter, blockCode)
     val whileCU = ASTParserLocal.getCU(src, "", fileName, whileCode)
 
     /**
-      * Do-while statements are rewritten and a modified compilation unit is obtained.
-      *  do{
-      *  i++;
-      *  } while(X() < 2);
-      *  modified to
-      *  int wh1 = X();
-      *  do {
-      *  i++;
-      *  wh1 = X();
-      *  } while(wh1 < 2);
-      */
+     * Do-while statements are rewritten and a modified compilation unit is obtained.
+     *  do{
+     *  i++;
+     *  } while(X() < 2);
+     *  modified to
+     *  int wh1 = X();
+     *  do {
+     *  i++;
+     *  wh1 = X();
+     *  } while(wh1 < 2);
+     */
     val doRewriter = new DoStatementCon(whileCU).startBlockConvert()
     val doCode = FileHelper.getSourceCodeAsString(doRewriter, whileCode)
     val doCU = ASTParserLocal.getCU(src, "", fileName, doCode)
 
     /**
-      * For statements are rewritten and a modified compilation unit is obtained. This is the final re-write.
-      * for(int i = 0; i < X() ; i++) {
-      * val = i + 2;
-      * }
-      * modified to
-      * int for1 = X();
-      * for(int i = 0; i < for1 ; i++) {
-      * val = i + 2;
-      * for1 = X();
-      */
+     * For statements are rewritten and a modified compilation unit is obtained. This is the final re-write.
+     * for(int i = 0; i < X() ; i++) {
+     * val = i + 2;
+     * }
+     * modified to
+     * int for1 = X();
+     * for(int i = 0; i < for1 ; i++) {
+     * val = i + 2;
+     * for1 = X();
+     */
     val forRewriter = new ForStatementCon(doCU).startBlockConvert()
     val forCode = FileHelper.getSourceCodeAsString(forRewriter, doCode)
     val forCU = ASTParserLocal.getCU(src, "", fileName, forCode)

@@ -1,5 +1,6 @@
 package parser.instrumentation
 
+import com.typesafe.scalalogging.LazyLogging
 import org.eclipse.jdt.core.dom._
 import parser.utils.{Attribute, ExpressionUtils}
 
@@ -7,7 +8,7 @@ import parser.utils.{Attribute, ExpressionUtils}
  * The Control structures Instrumentor class.
  * Identifies the attributes needed for Switch, if-else if, while, for, do-while, for each control statements.
  */
-class ControlInstrum() {
+class ControlInstrum() extends LazyLogging{
   /**
    * Returns the type of the statement and a list of attributes depending on the type of statement.
    * @param statement
@@ -27,6 +28,7 @@ class ControlInstrum() {
 
     //Recurse on the expression part of each of these statements to identify appropriate attributes.
     val attributes: List[Attribute] = ExpressionUtils.recurseExpression(expression.get)
+    logger.info("Total attributes to be added in instrumentation for statement type " + name.get + "is " + attributes.length)
     (attributes, name.getOrElse("Unknown"))
   }
 }

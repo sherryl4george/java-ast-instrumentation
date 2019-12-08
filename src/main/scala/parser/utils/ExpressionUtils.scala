@@ -1,12 +1,14 @@
 package parser.utils
 
+import com.typesafe.scalalogging.LazyLogging
 import org.eclipse.jdt.core.dom._
+
 import scala.jdk.CollectionConverters._
 
 /**
 The utility class for handling Expressions and statements.
  */
-object ExpressionUtils{
+object ExpressionUtils extends LazyLogging{
 
   /**
   Based on the expression type passed, assign types to the expression statements.
@@ -56,6 +58,7 @@ object ExpressionUtils{
      * @param extra
      */
     def recurseExpressionHelper(expression: Expression, extra: String = ""): Unit = {
+      logger.debug("Recurse Expression Helper on expression =>")
       expression match {
         case _: ArrayCreation => {}
 

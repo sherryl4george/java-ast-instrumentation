@@ -1,5 +1,6 @@
 package parser.converters
 
+import com.typesafe.scalalogging.LazyLogging
 import org.eclipse.jdt.core.dom._
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.visitors.{DoStatementVisitor, EnhancedForVisitor, ForStatementVisitor, IfStatementVisitor, WhileStatementVisitor}
@@ -10,7 +11,7 @@ import parser.visitors.{DoStatementVisitor, EnhancedForVisitor, ForStatementVisi
  * This helps in simplifying detailed re-writing as well as adding instrumentation in non-blocked statements in the future.
  * @param cu
  */
-class BlockConverter(val cu: CompilationUnit) {
+class BlockConverter(val cu: CompilationUnit) extends LazyLogging{
   private[this] val rewriter = ASTRewrite.create(cu.getAST)
 
   /**
@@ -18,9 +19,11 @@ class BlockConverter(val cu: CompilationUnit) {
    * @return ASTRewrite
    */
   def startBlockConvert(): ASTRewrite = {
+    logger.debug("Begin block rewriting")
     block()
+    logger.debug("Block rewrite ends")
     rewriter
-  }
+}
 
   /**
    * The block conversion method
@@ -50,6 +53,9 @@ class BlockConverter(val cu: CompilationUnit) {
     val ifStatements = ifStatementVisitor.getIfStatements
     val enhancedForStatements = rangeForStatementVisitor.getForStatements
 
+    val totalStatements = whileStatements.length + forStatements.length + doStatements.length + ifStatements.length + enhancedForStatements.length
+    logger.info("Total statements that are going to be re-written - " + totalStatements)
+
     whileStatements.map(whileToBody(_))
     doStatements.map(doToBody(_))
     forStatements.map(forToBody(_))
@@ -62,6 +68,7 @@ class BlockConverter(val cu: CompilationUnit) {
    * @param ifStatement
    */
   def ifToBody(ifStatement : IfStatement) = {
+    logger.debug("If Blocking begin")
      val ifBody = ifStatement.getThenStatement
       if(!ifBody.isInstanceOf[Block]){
         val block = ifStatement.getAST.newBlock
@@ -76,7 +83,9 @@ class BlockConverter(val cu: CompilationUnit) {
           val lrw = rewriter.getListRewrite(block, Block.STATEMENTS_PROPERTY)
           lrw.insertLast(elseBody, null)
           rewriter.replace(elseBody, block, null)
+          logger.debug("Else body blocking done")
         }
+    logger.debug("If Blocking done")
     }
 
   /**
@@ -84,6 +93,7 @@ class BlockConverter(val cu: CompilationUnit) {
    * @param whileStatement
    */
     def whileToBody(whileStatement : WhileStatement) = {
+      logger.debug("While blocking begin")
       val whileBody = whileStatement.getBody
       if (!whileBody.isInstanceOf[Block]) {
         val block = whileStatement.getAST.newBlock
@@ -91,6 +101,7 @@ class BlockConverter(val cu: CompilationUnit) {
         lrw.insertLast(whileBody, null)
         rewriter.replace(whileBody, block, null)
       }
+      logger.debug("while blocking end")
     }
 
   /**
@@ -98,6 +109,7 @@ class BlockConverter(val cu: CompilationUnit) {
    * @param forStatement
    */
   def forToBody(forStatement : ForStatement) = {
+    logger.debug("For Body begin")
     val forBody = forStatement.getBody
     if (!forBody.isInstanceOf[Block]) {
       val block = forStatement.getAST.newBlock
@@ -105,6 +117,7 @@ class BlockConverter(val cu: CompilationUnit) {
       lrw.insertLast(forBody, null)
       rewriter.replace(forBody, block, null)
     }
+    logger.debug("For Body end")
   }
 
   /**
@@ -112,6 +125,7 @@ class BlockConverter(val cu: CompilationUnit) {
    * @param forStatement
    */
   def enhancedForToBody(forStatement : EnhancedForStatement) = {
+    logger.debug("Enhanced For Body begin")
     val forBody = forStatement.getBody
     if (!forBody.isInstanceOf[Block]) {
       val block = forStatement.getAST.newBlock
@@ -119,6 +133,7 @@ class BlockConverter(val cu: CompilationUnit) {
       lrw.insertLast(forBody, null)
       rewriter.replace(forBody, block, null)
     }
+    logger.debug("Enhanced For Body End")
   }
 
   /**
@@ -126,6 +141,7 @@ class BlockConverter(val cu: CompilationUnit) {
    * @param doStatement
    */
   def doToBody(doStatement : DoStatement) = {
+    logger.debug("Do body block begin")
     val doBody = doStatement.getBody
     if (!doBody.isInstanceOf[Block]) {
       val block = doStatement.getAST.newBlock
@@ -133,6 +149,7 @@ class BlockConverter(val cu: CompilationUnit) {
       lrw.insertLast(doBody, null)
       rewriter.replace(doBody, block, null)
     }
+    logger.debug("Do body block end")
   }
   }
 

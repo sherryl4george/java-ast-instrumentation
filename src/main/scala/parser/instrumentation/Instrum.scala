@@ -1,4 +1,5 @@
 package parser.instrumentation
+import com.typesafe.scalalogging.LazyLogging
 import org.eclipse.jdt.core.dom.{ASTNode, Block, CompilationUnit, EnhancedForStatement, ExpressionStatement, ForStatement, MethodDeclaration, ReturnStatement, Statement, VariableDeclarationStatement}
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import parser.utils.{Attribute, ExpressionUtils, utils}
@@ -12,7 +13,7 @@ import parser.visitors.{DoStatementVisitor, EnhancedForVisitor, ExpressionStatem
  * Method Declarations, Control Statements (if, for, while, do-while, for each, switch), Return Statements, Variable Declarations.
  * @param cu - A compilation unit.
  */
-class Instrum(val cu: CompilationUnit){
+class Instrum(val cu: CompilationUnit) extends LazyLogging {
     private[this] val rewriter = ASTRewrite.create(cu.getAST)
     private[this] var nodes : List[ASTNode] = List()
 
@@ -23,8 +24,8 @@ class Instrum(val cu: CompilationUnit){
    * @return
    */
   def startInstrum(): ASTRewrite = {
-
       //Create individual visitors for each statement.
+      logger.debug("Begin instrumentation")
       val expressionStatementVisitor = new ExpressionStatementVisitor
       val vdStatementVisitor = new VDStatementVisitor
       val returnStatementVisitor = new ReturnStatementVisitor
@@ -60,6 +61,7 @@ class Instrum(val cu: CompilationUnit){
       switchStatementVisitor.getSwitchStatements.map(createNodes(_))
       methodDeclarationVisitor.getMethodDeclarations.map(createNodes(_))
 
+      logger.info("Total number of nodes to be instrumented - " + nodes.length)
       //Invoke the instrumentor on each node.
       nodes.map(instrumHelper(_))
       rewriter
@@ -78,9 +80,11 @@ class Instrum(val cu: CompilationUnit){
       node.getNodeType match {
         // Expression Statement
         case ASTNode.EXPRESSION_STATEMENT => {
+          logger.debug("Expression statement instrument begin")
           val expressionStatement = node.asInstanceOf[ExpressionStatement]
           val attributes = new AssignmentInstrum().assignmentInstrumHelper(expressionStatement)
           val name = ExpressionUtils.getTextForExpression(expressionStatement.getExpression)
+          logger.info("This is an expression of type -" + name)
           val log = makeLog(attributes,node,name)
           //Rewrite is done after the statement.
           rewrite(log,node,"after")
@@ -88,6 +92,7 @@ class Instrum(val cu: CompilationUnit){
 
         //Return Statement
         case ASTNode.RETURN_STATEMENT => {
+          logger.debug("Return statement instrument begin")
           val parent = getParent(node.getParent)
           val returnStatement = node.asInstanceOf[ReturnStatement]
           val attributes = new ReturnInstrum().returnInstrumHelper(returnStatement)
@@ -101,6 +106,7 @@ class Instrum(val cu: CompilationUnit){
              ASTNode.IF_STATEMENT |
             ASTNode.WHILE_STATEMENT |
             ASTNode.DO_STATEMENT => {
+          logger.debug("Instrument control statements switch/if/while/do statements")
           val parent = getParent(node.getParent)
           val (attributes, name)= new ControlInstrum().controlInstrumHelper(node.asInstanceOf[Statement])
           val log = makeLog(attributes, node, name)
@@ -113,12 +119,14 @@ class Instrum(val cu: CompilationUnit){
          * To handle this case, instrumentation is added  before the first statement in the loop body.
          */
         case ASTNode.FOR_STATEMENT => {
+          logger.debug("For statement instrument begin")
           val (attributes, name)= new ControlInstrum().controlInstrumHelper(node.asInstanceOf[Statement])
           val log = makeLog(attributes, node, name)
           rewrite(log,node.asInstanceOf[ForStatement].getBody,"first")
         }
 
         case ASTNode.ENHANCED_FOR_STATEMENT => {
+          logger.debug("Enhanced For statement instrument begin")
           val (attributes, name)= new ControlInstrum().controlInstrumHelper(node.asInstanceOf[Statement])
           val log = makeLog(attributes, node, name)
           rewrite(log,node.asInstanceOf[EnhancedForStatement].getBody,"first")
@@ -126,6 +134,7 @@ class Instrum(val cu: CompilationUnit){
 
         //Variable Declaration Statement
         case ASTNode.VARIABLE_DECLARATION_STATEMENT => {
+          logger.debug("Variable declaration statement instrument begin")
           val parent = getParent(node.getParent)
           val results = new VDSInstrum().varDFragmentInstrumHelper(node.asInstanceOf[VariableDeclarationStatement])
           results.map(x => {
@@ -137,6 +146,7 @@ class Instrum(val cu: CompilationUnit){
 
         //Method Declaration.
         case ASTNode.METHOD_DECLARATION => {
+          logger.debug("Method Declaration instrument begin")
           val methodDeclaration = node.asInstanceOf[MethodDeclaration]
           val attributes = new MethodDeclarationInstrum().methodDeclarationInstrumHelper(methodDeclaration)
           val log = makeLog(attributes,node,"MethodDeclaration")

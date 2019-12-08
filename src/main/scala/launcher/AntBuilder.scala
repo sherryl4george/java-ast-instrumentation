@@ -4,6 +4,10 @@ import java.nio.file.Paths
 import java.util
 
 import com.typesafe.config.Config
+import scala.jdk.CollectionConverters._
+import com.typesafe.config.Config
+import com.typesafe.scalalogging.LazyLogging
+import org.apache.commons.io.FileUtils
 import org.apache.tools.ant.{BuildEvent, DefaultLogger, Project, ProjectHelper}
 import parser.utils.FileHelper
 
@@ -15,7 +19,7 @@ import scala.jdk.CollectionConverters._
  * JVM is invoked for multiple inputs.
  * @param config
  */
-case class AntBuilder(config: Config){
+case class AntBuilder(config: Config) extends LazyLogging{
 
   /**
    * The Default Logger class that uses a hook to identify the completion of the build.
@@ -53,7 +57,7 @@ case class AntBuilder(config: Config){
      * @param jarList
      * @param mainClass
      * @param argList
-0     */
+    0     */
     def invoke(target:String, jarList: String, mainClass : String, argList : String) = {
 
       //Create arguments for invoking the JVM
