@@ -7,6 +7,7 @@ import java.util
 import com.sun.jdi.connect.{Connector, IllegalConnectorArgumentsException, LaunchingConnector, VMStartException}
 import com.sun.jdi.{Bootstrap, VirtualMachine}
 import com.sun.tools.jdi.SunCommandLineLauncher
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.jdk.CollectionConverters._
 
@@ -14,7 +15,7 @@ import scala.jdk.CollectionConverters._
  * The JVM launcher class.
  * Responsible for launching the JVM and execute the instrumented code.
  */
-case class JVMLauncher(){
+case class JVMLauncher() extends LazyLogging {
   private [this] var connector: LaunchingConnector = null
   private [this] var connectorArgs: util.Map[String, Connector.Argument] =  new util.HashMap[String,Connector.Argument]()
   private [this] var process: Process = null
@@ -28,7 +29,10 @@ case class JVMLauncher(){
     val connectorEither = getConnector()
     getConnector match {
       case Right(newConnector) => connector = newConnector
-      case Left(message) => throw new RuntimeException(message)
+      case Left(message) => {
+        logger.error("Exception occured with JVM initialization => " + message + ". Cannot proceed!")
+        throw new RuntimeException(message)
+      }
     }
     connectorArgs = initConnectArgs(arguments)
   }
@@ -44,7 +48,10 @@ case class JVMLauncher(){
         if (jvm.canBeModified)
           setEventRequests(jvm)
       }
-      case Left(message) => throw new RuntimeException(message)
+      case Left(message) => {
+        logger.error("Error occurred with JVM launch with message => " + message + ". Cannot proceed!")
+        throw new RuntimeException(message)
+      }
     }
   }
 
@@ -69,6 +76,7 @@ case class JVMLauncher(){
       }
     })
     println(defaultArgs)
+    logger.info("JVM args - " + defaultArgs)
     defaultArgs
   }
 
@@ -82,12 +90,20 @@ case class JVMLauncher(){
       process = vm.process
       displayRemoteOutput(process.getErrorStream)
       displayRemoteOutput(process.getInputStream)
+      logger.info("JVM launch complete")
       Right(vm)
     } catch {
-      case ioe: IOException => Left("Unable to launch target VM." + ioe.getMessage)
-      case icae: IllegalConnectorArgumentsException => Left("Internal debugger error. " + icae.getMessage)
+      case ioe: IOException => {
+        logger.error("JVM launch failed with exception -> " + ioe.getMessage)
+        Left("Unable to launch target VM." + ioe.getMessage)
+      }
+      case icae: IllegalConnectorArgumentsException => {
+        logger.error("Internal debugger error occurred -> " + icae.getMessage)
+        Left("Internal debugger error. " + icae.getMessage)
+      }
       case vmse: VMStartException => {
         dumpFailedLaunchInfo(vmse.process)
+        logger.error("Target VM failed to initialize - vmstartException -> " + vmse.getMessage)
         Left("Target VM failed to initialize. - vmstartexception: " + vmse.getMessage)
       }
     }
@@ -107,11 +123,17 @@ case class JVMLauncher(){
       .head match {
       case x: SunCommandLineLauncher => Right(x.asInstanceOf[LaunchingConnector])
       case _ => {
+        logger.error("Exception : Appropriate connector not found")
         Left("Exception: Appropriate Connector not Found")
       }
     }
   }
 
+  /**
+   * Sets Event Requests.
+   * This is necessary to process various events to enable debugging etc.
+   * @param vm
+   */
   private def setEventRequests(vm: VirtualMachine): Unit = {
     val erm = vm.eventRequestManager
     val tsr = erm.createThreadStartRequest
@@ -120,15 +142,21 @@ case class JVMLauncher(){
     tdr.enable()
   }
 
-  // Start a thread responsible for input stream
-  // read characters and print them out. (dumpStream)
+  /**
+   * read characters and print them out. (dumpStream)
+   * read characters and print them out. (dumpStream)
+   * @param stream
+   */
   private def displayRemoteOutput(stream: InputStream): Unit = {
     val thr = new Thread("output reader") {
       override def run(): Unit = {
         try
           dumpStream(stream)
         catch {
-          case ex: IOException => println("Failed reading output")
+          case ex: IOException =>  {
+            logger.error("Failed reading output")
+            println("Failed reading output")
+          }
         }
       }
     }
@@ -136,16 +164,25 @@ case class JVMLauncher(){
     thr.start()
   }
 
+  /**
+   * Dump Failure messages
+   * @param process
+   */
   private def dumpFailedLaunchInfo(process: Process): Unit = {
     try {
       dumpStream(process.getErrorStream)
       dumpStream(process.getInputStream)
     } catch {
       case e: IOException =>
+        logger.error("Unable to display process output -> " + e.getMessage)
         err.println("Unable to display process output:" + e.getMessage)
     }
   }
 
-  // Read every character from stream, output them
+
+  /**
+   * Read every character from stream, output them
+   * @param stream
+   */
   private def dumpStream(stream: InputStream): Unit = println(scala.io.Source.fromInputStream(stream).mkString)
 }

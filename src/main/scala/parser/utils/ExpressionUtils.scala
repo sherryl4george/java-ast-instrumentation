@@ -32,7 +32,6 @@ object ExpressionUtils extends LazyLogging{
       case _: PrefixExpression => ""
       case x: QualifiedName => ""
       case _: SuperMethodInvocation => ""
-//      case _: SuperMethodReference => ""
       case _: ThisExpression => ""
       case _: TypeMethodReference => ""
       case _: VariableDeclarationExpression => ""
@@ -58,12 +57,13 @@ object ExpressionUtils extends LazyLogging{
      * @param extra
      */
     def recurseExpressionHelper(expression: Expression, extra: String = ""): Unit = {
-      logger.debug("Recurse Expression Helper on expression =>")
+      logger.info("Recurse Expression Helper on expression => " + expression.toString)
       expression match {
         case _: ArrayCreation => {}
 
         /**
          * Identifies the array elements and indices and creates appropriate attributes.
+         * new AP("Array Begin", "", "{"), new AP("inner SimpleName", "", cell), new AP(" inner SimpleName", "", Bi), new AP(" inner SimpleName", "", Bj), new AP("Array End", "", "}")
          */
         case x: ArrayAccess => {
           if(extra.isEmpty)
@@ -75,7 +75,7 @@ object ExpressionUtils extends LazyLogging{
         }
 
         /**
-         * Identifies the begin and end of the respective dimensions in an array.
+         * Identifies the begin and end of the respective dimensions in an array.         *
          */
         case x :  ArrayInitializer => {
           val expressionList =  x.expressions().asScala.toList
@@ -159,7 +159,6 @@ object ExpressionUtils extends LazyLogging{
           val test = simpleName.toString
           val (binding, declaringMethod) = Binding.getBindingLabel(simpleName.resolveBinding())
           val sdf = expression.asInstanceOf[SimpleName].getFullyQualifiedName
-//          attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "SimpleName"), utils.wrapStringInQuotes(binding+"."+expression.asInstanceOf[SimpleName].getFullyQualifiedName), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
           attributes = attributes :+ new Attribute(utils.wrapStringInQuotes(extra + "SimpleName"), utils.wrapStringInQuotes(binding), expression.asInstanceOf[SimpleName].getFullyQualifiedName)
         }
 
@@ -188,6 +187,8 @@ object ExpressionUtils extends LazyLogging{
             case _ => recurseExpressionHelper(x.getOperand)
           }
         }
+
+        //Qualified Name -> includes the binding information.
         case x: QualifiedName => {
           val (binding, declaringMethod) = Binding.getBindingLabel(x.getName.resolveBinding())
           val sdf = x.getName.getFullyQualifiedName
@@ -195,7 +196,6 @@ object ExpressionUtils extends LazyLogging{
             List(x.getQualifier.getFullyQualifiedName, x.getName.getFullyQualifiedName).mkString("."))
         }
         case _: SuperMethodInvocation => {}
-//        case _: SuperMethodReference => {}
         case _: ThisExpression => {}
         case _: TypeMethodReference => {}
         case _: VariableDeclarationExpression => {}
@@ -215,6 +215,7 @@ object ExpressionUtils extends LazyLogging{
     recurseExpressionHelper(expression)
 
     //Returns a list of attributes when recursion terminates.
+    logger.info("Attribute total length => " + attributes.length)
     attributes
   }
 }

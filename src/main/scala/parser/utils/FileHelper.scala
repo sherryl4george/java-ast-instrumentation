@@ -2,17 +2,19 @@ package parser.utils
 
 import java.io.{File, IOException}
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.FileUtils.{readFileToString, writeStringToFile}
 import org.apache.commons.io.filefilter.TrueFileFilter
 import org.apache.commons.io.{FileUtils, FilenameUtils}
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite
 import org.eclipse.jface.text.{BadLocationException, Document}
+
 import scala.jdk.CollectionConverters._
 
 /**
 The util class to handle file operations.
  */
-object FileHelper {
+object FileHelper extends LazyLogging {
 
   /**
    * Writes a source code string to a file.
@@ -22,10 +24,13 @@ object FileHelper {
   def writeFile(sourceCode: String, outputFile:String) = {
     try {
       writeStringToFile(new File(outputFile), sourceCode)
+      logger.debug("Code written to file => " + outputFile)
     }
     catch {
-      case e: IOException =>
+      case e: IOException => {
         e.printStackTrace()
+        logger.error("Error occured when writing to file =>" + e.getMessage)
+      }
     }
   }
 
@@ -41,8 +46,10 @@ object FileHelper {
     try
       edits.apply(document)
     catch {
-      case e: BadLocationException =>
+      case e: BadLocationException => {
         e.printStackTrace()
+        logger.error("Error reading source code as string => " + e.getMessage)
+      }
     }
     document.get
   }
@@ -61,6 +68,7 @@ object FileHelper {
    * @return
    */
   def getFilesByExtension(source: String, extension: String) : List[File] = {
+    logger.info("Getting files from " + source + "with extension => " + extension)
     FileUtils.listFiles(new File(source), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).asScala.toList.filter(file=>{
       FilenameUtils.getExtension(file.getAbsolutePath).equals(extension)
     })

@@ -1,4 +1,4 @@
-class Test {
+public class ForTest {
   private static int doSomething() {
     int x = 0;
     x++;

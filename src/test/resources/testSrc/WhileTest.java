@@ -1,4 +1,4 @@
-class Test {
+public class WhileTest {
   private static int doSomething() {
     int x = 0;
     x++;

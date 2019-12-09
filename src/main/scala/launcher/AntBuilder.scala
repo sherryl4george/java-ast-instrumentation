@@ -2,12 +2,8 @@ package launcher
 
 import java.nio.file.Paths
 import java.util
-
-import com.typesafe.config.Config
-import scala.jdk.CollectionConverters._
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
-import org.apache.commons.io.FileUtils
 import org.apache.tools.ant.{BuildEvent, DefaultLogger, Project, ProjectHelper}
 import parser.utils.FileHelper
 
@@ -31,6 +27,8 @@ case class AntBuilder(config: Config) extends LazyLogging{
      */
     override def buildFinished(event: BuildEvent): Unit = {
       println("BUILD FINISHED")
+      logger.info("Build completed successfully!")
+
       //Invoke JVM once compilation has finished.
       executeJava()
     }
@@ -48,7 +46,11 @@ case class AntBuilder(config: Config) extends LazyLogging{
       val main = config.getString("run.mainClass")
 
       //Invoke JVM on each input.
+      val totalRuns = config.getAnyRefList("run.arguments").size()
+      logger.info("Total number of inputs to run against - " + totalRuns)
+
       config.getAnyRefList("run.arguments").forEach(x => invoke(targetDir,jarList,main,x.asInstanceOf[util.ArrayList[String]].asScala.toList.mkString(" ")))
+      logger.debug("Instrumented code executed on all inputs!")
     }
 
     /**
@@ -59,7 +61,7 @@ case class AntBuilder(config: Config) extends LazyLogging{
      * @param argList
     0     */
     def invoke(target:String, jarList: String, mainClass : String, argList : String) = {
-
+      logger.info("Invoking JVM with argument set -> " + argList)
       //Create arguments for invoking the JVM
       val map = Map(
         "main" -> (mainClass + " " + argList),
@@ -100,8 +102,8 @@ case class AntBuilder(config: Config) extends LazyLogging{
     } catch {
       case e: Exception =>
         e.printStackTrace()
+        logger.error("Build failed with error -> " + e)
         println("Build Failed with error ->" + e)
-
     }
   }
 }

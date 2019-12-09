@@ -1,4 +1,4 @@
-class Test{
+public class MultipleInstrum{
     public int test() {
         int a = 0, b = 0;
         a = 2 + 3;

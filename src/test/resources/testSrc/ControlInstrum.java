@@ -1,4 +1,4 @@
-class Test{
+public class ComtrolInstrum{
     public void controls(int i) {
         if(i > 0) {
             i++;
