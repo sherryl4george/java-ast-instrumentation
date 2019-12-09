@@ -19,7 +19,9 @@ The requirements of this project are:
 **Note:** The project is developed and tested on a Unix based OS. 
 ## How to run
 The project has two main files:
+
 1. ServerLaunch - Launches the IPC server to listen to communications
+
 2. InstrumLauch - Launches the instrumentation for a selected project
 
 Below are the steps to be followed to run the project in Intellij:
@@ -31,15 +33,20 @@ Below are the steps to be followed to run the project in Intellij:
 3. After each run two timestamped files will be found in the `tracefiles` directory in the project root. The file with `binding_` will have the formatted data of the hashtable for each variable and `trace_` will have running data of eachinstrum statement executed.
 
 `sbt` command line can also be used to run the project. Running the project from the root will provide you with option to select which class has to run. Run both the files in two separate terminals in the order described above.
+
 To run from command line use:
 `sbt clean compile run`
+
 To test from command line use:
 `sbt clean compile test`
+
 ## Basic Troubleshooting
 1. This project needs port `8080` to be free to run. If you get an `Address already in use` make sure to free the port. For a Unix system you can run the command `sudo lsof -i:8080` and then kill the PID blocking the port.
 2. If you get a `Failed to connect to 'localhost:8080'` error when running the `InstrumLaunch` make sure you have run `ServerLaunch` and the same is running.
+
 ## Applications used to run the instrumentations
 1. [Shortest Path Finding Algorithm](https://github.com/Suwadith/A-Star-Shortest-Pathfinding-Algorithm-Square-Grid-Java)
 2. [Inplace Matrix Rotation](https://www.geeksforgeeks.org/inplace-rotate-square-matrix-by-90-degrees/)
+
 ## Detailed Documentation
 Detailed design documentation can be found [here](report/report.pdf)
