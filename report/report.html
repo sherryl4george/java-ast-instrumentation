@@ -225,7 +225,8 @@ run {
   mainClass = "PathFindingOnSquaredGrid"
   # Provide input parameters
   arguments = [
-    [10 0.3 0 0 9 9]
+    [10 0.3 0 0 9 9],
+    [20 0.3 0 0 9 9]
   ]
 }
 </code></pre>
@@ -249,7 +250,8 @@ run {
   mainClass = "PathFindingOnSquaredGrid"
   # Provide input parameters
   arguments = [
-    [10 0.3 0 0 9 9]
+    [10 0.3 0 0 9 9],
+    [20 0.3 0 0 9 9]
   ]
 }
 </code></pre>
@@ -492,14 +494,14 @@ This shows that an array is assigned a value new Node(y,x)
 <p>The launcher program is responsible for compiling and executing multiple instances of the client application (JVM instances) against multiple inputs.<br>
 This also receives IPC messages through the web socket server and stores them in a hash table. This is then dumped into files, which are available for viewing.<br>
 The launcher comprises of multiple components -</p>
-<p>######1. The ANT builder -<br>
-This is responsible for compiling the source application (client), after adding instrumentation statements and generate <code>.class</code> files.</p>
+<h6 id="the-ant-builder--">1. The ANT builder -</h6>
+<p>This is responsible for compiling the source application (client), after adding instrumentation statements and generate <code>.class</code> files.</p>
 <p>The driver method in the AntBuilder class, under the launcher module is <code>compileAndLaunchJVM()</code>. This reads the <code>build.xml</code> config file from the source application<br>
 and builds the application.</p>
 <p>We use the <code>buildFinished()</code> hook to determine if the build completed successfully and launch the JVM from this method.</p>
 <p>On build failure, we log the error messages and abort as we cannot proceed further with execution.</p>
-<p>######2. The JVM launcher -<br>
-The <code>executeJava()</code> method under the AntBuilder class is responsible for invoking the JVM by reading the run configuration parameters. This method<br>
+<h6 id="the-jvm-launcher--">2. The JVM launcher -</h6>
+<p>The <code>executeJava()</code> method under the AntBuilder class is responsible for invoking the JVM by reading the run configuration parameters. This method<br>
 runs a JVM instance for every parameter as mentioned in the <code>run.arguments</code> in the project configuration file.</p>
 <p>The JVM is initialized with details of the Main class, program arguments, class path and any dependent jars and started. This is done in the JVMLauncher class<br>
 under the launcher module.</p>
