@@ -307,7 +307,8 @@ Instrumentation is added to capture the variables, the bindings and their values
     TemplateClass.instrum(41, "Assign", new AP("Array Begin", "", "{"), new AP("inner SimpleName", "PathFindingOnSquaredGrid.cell", cell), new AP(" inner SimpleName", "PathFindingOnSquaredGrid.generateHValue(boolean[][], int, int, int, int, int, int, int, boolean, int).y", y), new AP(" inner SimpleName", "PathFindingOnSquaredGrid.generateHValue(boolean[][], int, int, int, int, int, int, int, boolean, int).x", x), new AP("Array End", "", "}"), new AP("ClassInstanceCreation", "Node", "Node.Node(int, int)"), new AP("SimpleName", "PathFindingOnSquaredGrid.generateHValue(boolean[][], int, int, int, int, int, int, int, boolean, int).y", y), new AP("SimpleName", "PathFindingOnSquaredGrid.generateHValue(boolean[][], int, int, int, int, int, int, int, boolean, int).x", x));
     ```
     *Resulting trace with details of Location, Statement type, Binding and variable value* - 
-    ```
+    
+   ```
    Line: 41, SeenAt: "Assign"
    Name: "", Type: "Array Begin", Value: "{"
    Name: "PathFindingOnSquaredGrid.cell", Type: "inner SimpleName", Value: "[[LNode;@72d818d1"
