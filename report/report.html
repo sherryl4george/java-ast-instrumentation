@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>readme.md</title>
+  <title>report</title>
   <link rel="stylesheet" href="https://stackedit.io/style.css" />
 </head>
 
@@ -13,23 +13,18 @@
     <div class="stackedit__toc">
       
 <ul>
-<li><a href="#cs474---course-project">CS474 - Course Project</a>
+<li>
 <ul>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#dependencies">Dependencies</a></li>
 <li><a href="#how-to-run">How to run</a></li>
+<li><a href="#what-instrumlaunch-does-apart-from-instrumentation">What InstrumLaunch does apart from instrumentation</a></li>
+<li><a href="#how-to-add-a-new-project-for-instrumentation">How to add a new project for instrumentation</a></li>
 <li><a href="#technical-design">Technical Design</a></li>
-<li><a href="#components-overview">Components Overview</a>
-<ul>
-<li></li>
-</ul>
-</li>
-<li><a href="#component-details">Component Details</a>
-<ul>
-<li></li>
-</ul>
-</li>
+<li><a href="#components-overview">Components Overview</a></li>
+<li><a href="#component-details">Component Details</a></li>
+<li><a href="#results-trace--binding-files">Results (Trace & Binding Files)</a></li>
 </ul>
 </li>
 </ul>
@@ -38,7 +33,7 @@
   </div>
   <div class="stackedit__right">
     <div class="stackedit__html">
-      <h1 id="cs474---course-project">CS474 - Course Project</h1>
+      <p># CS474 - Course Project</p>
 <p>Team members</p>
 <ol>
 <li>Maithreyi Rajagopalan</li>
@@ -134,7 +129,7 @@ instrum statement executed.</li>
 </ol>
 <p><code>sbt</code> command line can also be used to run the project. Running the project from the root will provide you with option to<br>
 select which class has to run. Run both the files in two separate terminals in the order described above.</p>
-<h3 id="what-instrumlaunch-does-apart-from-instrumentation">What InstrumLaunch does apart from instrumentation</h3>
+<h2 id="what-instrumlaunch-does-apart-from-instrumentation">What InstrumLaunch does apart from instrumentation</h2>
 <ol>
 <li>Before any instrumentation starts all java files in <code>src</code> folder are copied to a folder name <code>oldSrc</code> one level above <code>src</code>, thus<br>
 saving the files which can be reused again for instrumenting.</li>
@@ -145,26 +140,19 @@ program. Also a new import <code>import astparser.*</code> is added to all instr
 <li>To enable the use of Websockets and JSON, two jars needs <code>nv-websocket-client-2.9.jar</code> and <code>json-20190722.jar</code> needs to be present in the <code>jars</code> folder of the instrumented<br>
 project. This is copied from <code>config/dependencyjar</code>.</li>
 </ol>
-<h3 id="how-to-add-a-new-project-for-instrumentation">How to add a new project for instrumentation</h3>
+<h2 id="how-to-add-a-new-project-for-instrumentation">How to add a new project for instrumentation</h2>
 <p>Each project used is based on Ant build. Ant is used for its simplicity to bootstrap a new project<br>
 quickly. Any tool build which gives out <code>.class</code> files as output can be swapped out instead of Any. Since using Ant<br>
 each project is expected to have a <code>build.xml</code> file with the below specification:</p>
 <ol>
-<li>
-<p>Default target is <code>compile</code></p>
-</li>
-<li>
-<p>A <code>javac</code> node is defined with the <code>destdir</code> property set to a folder.</p>
-</li>
-<li>
-<p>Two dependency jars as defined below are specified in the classpath node. Only declaration for the <code>jars</code> in the build<br>
-file is needed. The original files are copied automatically by the launcher program.</p>
-<pre class=" language-xml"><code class="prism  language-xml"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>&lt;your_jar_folder&gt;/nv-websocket-client-2.9.jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>			
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>&lt;your_jar_folder&gt;/json-20190722.jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span> 
+<li>Default target is <code>compile</code></li>
+<li>A <code>javac</code> node is defined with the <code>destdir</code> property set to a folder.</li>
+<li>Two dependency jars as defined below are specified in the classpath node. Only declaration for the <code>jars</code> in the build<br>
+file is needed. The original files are copied automatically by the launcher program.<pre class=" language-xml"><code class="prism  language-xml"> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>&lt;your_jar_folder&gt;/nv-websocket-client-2.9.jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>&lt;your_jar_folder&gt;/json-20190722.jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
 </code></pre>
-</li>
+Below is an example of a <code>build.xml</code> which can be used as a starting point</li>
 </ol>
-<p>Below is an example of a <code>build.xml</code> which can be used as a starting point</p>
 <pre class=" language-xml"><code class="prism  language-xml"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>project</span> <span class="token attr-name">default</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>compile<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>target</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>compile<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>mkdir</span> <span class="token attr-name">dir</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>target<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
@@ -172,9 +160,9 @@ file is needed. The original files are copied automatically by the launcher prog
 		<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>classpath</span><span class="token punctuation">&gt;</span></span>
 		    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>jars/stdlib(3).jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
 		    <span class="token comment">&lt;!--Below two lines are included as per specification--&gt;</span>
-		    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>jars/nv-websocket-client-2.9.jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>			
-			<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>jars/json-20190722.jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span> 
-			
+		    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>jars/nv-websocket-client-2.9.jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+			<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pathelement</span> <span class="token attr-name">path</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>jars/json-20190722.jar<span class="token punctuation">"</span></span><span class="token punctuation">/&gt;</span></span>
+
 	    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>classpath</span><span class="token punctuation">&gt;</span></span>
 	<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>javac</span><span class="token punctuation">&gt;</span></span>
     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>target</span><span class="token punctuation">&gt;</span></span>
@@ -188,79 +176,71 @@ file is needed. The original files are copied automatically by the launcher prog
 <li>
 <p>Add a configuration file to the folder <code>config/instrum</code>. This a configuration file and should have the extension <code>.conf</code>.<br>
 Each parameter in the configuration file is shown below: All parameters are mandatory and the program cannot procced without<br>
-setting each of the below parameters</p>
-<ol>
-<li>rootRelativetoInstrumDir - Set this to <code>true</code> if the new project foler is saved inside the instrumentation project<br>
-directory. Else set this to <code>false</code>.</li>
-<li>root - Specify path to the root of your project. If you set <code>true</code> for <code>rootRelativetoInstrumDir</code> this path should be<br>
-relative else you need an absolute path to be specified.</li>
-<li>srcDir - Specify path to top level directory which has <code>.java</code> code files. This is to be set relatively to the <code>root</code><br>
-parameter</li>
-<li>targetDir - Specify where to find the <code>.class</code> files produced by the Ant builder. This is to be set relatively to the <code>root</code><br>
-parameter</li>
-<li>jarFolder - Specify the folder where your <code>jars</code> are saved. This should be the folder part of your <code>classpath</code> specification<br>
-in the <code>build.xml</code>. This is to be set relatively to the <code>root</code> parameter.</li>
-<li>buildFile - Specify where your <code>build.xml</code> file is. This is to be set relatively to the <code>root</code> parameter.</li>
-<li>mainClass - Give the qualified name including the package structure of your main class</li>
-<li>arguments - This is a list of list. The inner list is separated by commas and each inner list consists of the arguments<br>
-to be passed to the instrumented program.</li>
-</ol>
+setting each of the below parameters 1. rootRelativetoInstrumDir - Set this to <code>true</code> if the new project foler is saved inside the instrumentation project<br>
+directory. Else set this to <code>false</code>. 2. root - Specify path to the root of your project. If you set <code>true</code> for <code>rootRelativetoInstrumDir</code> this path should be<br>
+relative else you need an absolute path to be specified. 3. srcDir - Specify path to top level directory which has <code>.java</code> code files. This is to be set relatively to the <code>root</code><br>
+parameter 4. targetDir - Specify where to find the <code>.class</code> files produced by the Ant builder. This is to be set relatively to the <code>root</code><br>
+parameter 5. jarFolder - Specify the folder where your <code>jars</code> are saved. This should be the folder part of your <code>classpath</code> specification<br>
+in the <code>build.xml</code>. This is to be set relatively to the <code>root</code> parameter. 6. buildFile - Specify where your <code>build.xml</code> file is. This is to be set relatively to the <code>root</code> parameter. 7. mainClass - Give the qualified name including the package structure of your main class 8. arguments - This is a list of list. The inner list is separated by commas and each inner list consists of the arguments<br>
+to be passed to the instrumented program.</p>
 <p>See for a sample <code>pathfinder.conf</code> file for a project saved inside the instrumentation project in the path <code>projects/project1</code></p>
-<pre class=" language-editorconfig"><code class="prism  language-editorconfig">compile{
-  # Set this to true if the project root directory
-  # is inside the instrum project directory and the provide
-  # relative path to the project folder
-  rootRelativetoInstrumDir = true
-  root = "projects/project1"
-  # Everything below this line is relative to the
-  # project root
-  srcDir = "src"
-  targetDir = "target"
-  jarFolder = "jars"
-  buildFile = "build.xml"
-}
+<pre><code>compile{
+ # Set this to true if the project root directory
+ # is inside the instrum project directory and the provide
+ # relative path to the project folder
+ rootRelativetoInstrumDir = true
+ root = "projects/project1"
+ # Everything below this line is relative to the
+ # project root
+ srcDir = "src"
+ targetDir = "target"
+ jarFolder = "jars"
+ buildFile = "build.xml"
+ }
 
-run {
-  # Provide the qualified main class
-  mainClass = "PathFindingOnSquaredGrid"
-  # Provide input parameters
-  arguments = [
-    [10 0.3 0 0 9 9],
-    [20 0.3 0 0 9 9]
-  ]
-}
+ run {
+ # Provide the qualified main class
+ mainClass = "PathFindingOnSquaredGrid"
+ # Provide input parameters
+ arguments = [
+     [10 0.3 0 0 9 9],
+     [20 0.1 0 0 18 18],
+     [12 0.4 0 0 5 5]
+ ]
+ }
 </code></pre>
 <p>See for a sample <code>pathfinder.conf</code> file for a project saved at <code>/home/sherryl/Desktop/project1</code></p>
-<pre class=" language-editorconfig"><code class="prism  language-editorconfig">compile{
-  # Set this to true if the project root directory
-  # is inside the instrum project directory and the provide
-  # relative path to the project folder
-  rootRelativetoInstrumDir = false
-  root = "/home/sherryl/Desktop/project1"
-  # Everything below this line is relative to the
-  # project root
-  srcDir = "src"
-  targetDir = "target"
-  jarFolder = "jars"
-  buildFile = "build.xml"
-}
+<pre><code>compile{
+ # Set this to true if the project root directory
+ # is inside the instrum project directory and the provide
+ # relative path to the project folder
+ rootRelativetoInstrumDir = false
+ root = "/home/sherryl/Desktop/project1"
+ # Everything below this line is relative to the
+ # project root
+ srcDir = "src"
+ targetDir = "target"
+ jarFolder = "jars"
+ buildFile = "build.xml"
+ }
 
-run {
-  # Provide the qualified main class
-  mainClass = "PathFindingOnSquaredGrid"
-  # Provide input parameters
-  arguments = [
-    [10 0.3 0 0 9 9],
-    [20 0.3 0 0 9 9]
-  ]
-}
+ run {
+ # Provide the qualified main class
+ mainClass = "PathFindingOnSquaredGrid"
+ # Provide input parameters
+ arguments = [
+     [10 0.3 0 0 9 9],
+     [20 0.1 0 0 18 18],
+     [12 0.4 0 0 5 5]
+ ]
+ }
 </code></pre>
 </li>
 <li>
 <p>Make sure the project is in the path you specified as <code>root</code> and you are good to run the code.</p>
 </li>
 </ol>
-<h5 id="basic-troubleshooting">Basic Troubleshooting</h5>
+<h3 id="basic-troubleshooting">Basic Troubleshooting</h3>
 <ol>
 <li>This project needs port <code>8080</code> to be free to run. If you get an <code>Address already in use</code> make sure to free the port.<br>
 For a Unix system you can run the command <code>sudo lsof -i:8080</code> and then kill the PID blocking the port.</li>
@@ -271,9 +251,9 @@ For a Unix system you can run the command <code>sudo lsof -i:8080</code> and the
 <p>Below is the overall architecture of the Instrumenter system and overview of all components:<br>
 <img src="https://i.ibb.co/MS9KZyN/architecture.jpg" alt="enter image description here"></p>
 <h2 id="components-overview">Components Overview</h2>
-<h4 id="the-launcher-program">The Launcher Program</h4>
+<h3 id="the-launcher-program">The Launcher Program</h3>
 <p>Launcher program is divided into two:</p>
-<h5 id="instrumentor--jvmlauncher">1. Instrumentor &amp; JVMLauncher</h5>
+<h4 id="instrumentor--jvmlauncher">1. Instrumentor &amp; JVMLauncher</h4>
 <p>This component deals with reading files in a JAVA project, instrumenting the code and launch JVM instances for each set<br>
 of input. Main components are:</p>
 <ul>
@@ -286,7 +266,7 @@ Ant can be swapped out for any other build tool. The output of this step is <cod
 this step. The <code>.class</code> files will be saved into a predefined folder.</li>
 <li>JVMLauncher : JDI is used to launch separate instances of JVM for each set of inputs in the selected project</li>
 </ul>
-<h5 id="ipc-server--trace-writer">2. IPC Server &amp; Trace Writer</h5>
+<h4 id="ipc-server--trace-writer">2. IPC Server &amp; Trace Writer</h4>
 <p>This component has two main functions</p>
 <ul>
 <li>IPC Server - This server needs to be started before the instrumenter is run. Server listens to <code>127.0.0.1:8080</code> for<br>
@@ -295,7 +275,7 @@ incoming messages. Each message is in JSON format in the below schema:</li>
 <pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span>
   <span class="token string">"line"</span><span class="token punctuation">:</span> <span class="token string">"Int"</span><span class="token punctuation">,</span>
   <span class="token string">"statementType"</span><span class="token punctuation">:</span> <span class="token string">"String"</span><span class="token punctuation">,</span>
-  <span class="token string">"data"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span><span class="token string">"type"</span><span class="token punctuation">:</span>  <span class="token string">"String"</span><span class="token punctuation">,</span> <span class="token string">"binding"</span><span class="token punctuation">:</span> <span class="token string">"String"</span><span class="token punctuation">,</span> <span class="token string">"value"</span><span class="token punctuation">:</span>  <span class="token string">"String"</span><span class="token punctuation">}</span><span class="token punctuation">]</span>
+  <span class="token string">"data"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span> <span class="token string">"type"</span><span class="token punctuation">:</span> <span class="token string">"String"</span><span class="token punctuation">,</span> <span class="token string">"binding"</span><span class="token punctuation">:</span> <span class="token string">"String"</span><span class="token punctuation">,</span> <span class="token string">"value"</span><span class="token punctuation">:</span> <span class="token string">"String"</span> <span class="token punctuation">}</span><span class="token punctuation">]</span>
 <span class="token punctuation">}</span>
 </code></pre>
 <p>Each JSON thus obtained is parsed and a hastable is maintained with the unique identifier as <code>binding</code>. And the JSON is<br>
@@ -306,7 +286,7 @@ client is disconnected.</p>
 <li>JSON Parser &amp; File Writer : Has code to parse each JSON coming to the system and write files at the disconnection of<br>
 each client.</li>
 </ul>
-<h4 id="the-jvm-instance-client">The JVM Instance (Client)</h4>
+<h3 id="the-jvm-instance-client">The JVM Instance (Client)</h3>
 <p>Each project is passed to a JVM instace. The instrumented code has two main components:</p>
 <ul>
 <li>Original Code with Instrumentation statements added and each instrumented statement will be of the form<br>
@@ -316,8 +296,8 @@ to the launcher program. This connection will be used for IPC. Every <code>instr
 to the launcher program for processing and saving.</li>
 </ul>
 <h2 id="component-details">Component Details</h2>
-<h4 id="the-launcher-program-1">1. The Launcher Program</h4>
-<h5 id="ast-parsing-and-instrumentation--">AST Parsing and Instrumentation -</h5>
+<h3 id="the-launcher-program-1">1. The Launcher Program</h3>
+<h4 id="ast-parsing-and-instrumentation--">AST Parsing and Instrumentation -</h4>
 <p>The parsing and instrumentation is done in multiple steps.</p>
 <ol>
 <li>AST Parsing
@@ -328,10 +308,10 @@ to the launcher program for processing and saving.</li>
 </li>
 <li>Instrumentation</li>
 </ol>
-<h6 id="ast-parsing--">1. AST Parsing -</h6>
+<h5 id="ast-parsing--">1. AST Parsing -</h5>
 <p>This consists of Block rewriting and code rewriting. This is done as a first step to transform the code, before we begin instrumentation. This is handled in files<br>
 BlockConverter, DoStatementCon, ForStatementCon, WhileStatementCon and FinalConverter classes under the converters module.</p>
-<h6 id="i.-block-rewrite">i. Block Rewrite</h6>
+<h5 id="i.-block-rewrite">i. Block Rewrite</h5>
 <p>As part of block rewrite step, all singled statements inside control structures , are converted to blocks.</p>
 <p>This is done for all control statements including, <em>for</em>, <em>do-while</em>, <em>while</em>, <em>for-each</em>, <em>if-else if-else</em>.<br>
 This is done to ensure that when we need to add an additional logging statement, we do not need to handle the absence of blocks.</p>
@@ -340,7 +320,7 @@ This is done to ensure that when we need to add an additional logging statement,
 if(i &lt; 2)
     System.out.println("hello");
 else
-    System.out.println("hi"); 
+    System.out.println("hi");
 </code></pre>
 <p>is transformed to</p>
 <pre><code>int i = 3;
@@ -351,11 +331,11 @@ else {
 System.out.println("hi");
 }
 </code></pre>
-<h6 id="ii.-code-rewrite">ii. Code Rewrite</h6>
+<h5 id="ii.-code-rewrite">ii. Code Rewrite</h5>
 <p>In the code rewrite step, we transform the method invocations in the expressions in looping constructs, <em>for</em>, <em>while</em> and <em>do-while</em> into<br>
 single assignments.</p>
-<p>This is only  done for simple infix expressions with a single method invocation on either side of the operand; i.e. statements of the below nature, are not handled.</p>
-<pre><code>while(x() + x() + x() &lt; 10) 
+<p>This is only done for simple infix expressions with a single method invocation on either side of the operand; i.e. statements of the below nature, are not handled.</p>
+<pre><code>while(x() + x() + x() &lt; 10)
 </code></pre>
 <p>But for simple expressions involving one method invocation, we account for nested loops as well.</p>
 <p><em>Example</em> -</p>
@@ -366,14 +346,14 @@ single assignments.</p>
 }
 
 int x() {
-    return 2; 
+    return 2;
 }
 </code></pre>
 <p>is transformed to</p>
 <pre><code>int wh1 = x();
 while(wh1 &lt; 5) {
     int do1 = 0;
-    do {   
+    do {
         System.out.println(i);
         do1 = x();
     } while(do1 &lt; 2);
@@ -381,15 +361,15 @@ while(wh1 &lt; 5) {
 }
 
 int x() {
-    return 2; 
+    return 2;
 }
 </code></pre>
 <p>In addition to the loop construct transformation, we also add imports to include the Template class package (<em>This class includes the instrumentation method that is inserted into the original source</em>) and an additional last statement in the main() method to disconnect<br>
 the socket (<em>This is part of the IPC to communicate back with the launcher program</em>).</p>
-<h6 id="instrumentation">2. Instrumentation</h6>
+<h4 id="instrumentation">2. Instrumentation</h4>
 <p>Instrumentation is added to capture the variables, the bindings and their values in a Java source program. As part of this implementation, we handle the following constructs through visitors.<br>
 The visitors are under the visitors module and the instrumentation is done in Instrum, AssignmentInstrum, ControlInstrum, MethodDeclarationInstrum, ReturnInstrum and VDSInstrum classes under the instrumentation module.</p>
-<h6 id="constructs-handled">Constructs Handled</h6>
+<h5 id="constructs-handled">Constructs Handled</h5>
 <ol>
 <li>
 <p>Control structures - <em>for</em>, <em>while</em>, <em>do-while</em>, <em>for-each</em>, <em>if-else-if-else</em>, <em>switch</em></p>
@@ -399,7 +379,7 @@ The visitors are under the visitors module and the instrumentation is done in In
 }
 </code></pre>
 <p><em>Instrumentation Statement inserted</em> -</p>
-<pre><code>for (int x = 0; x &lt; matrix.length; x++) 
+<pre><code>for (int x = 0; x &lt; matrix.length; x++)
 TemplateClass.instrum(39, "ForStatement", new AP("SimpleName", "PathFindingOnSquaredGrid.generateHValue(boolean[][], int, int, int, int, int, int, int, boolean, int).x", x), new AP("QualifiedName", "length", matrix.length));
 </code></pre>
 <p><em>Resulting trace with details of Location, Statement type, Binding and variable value</em> -</p>
@@ -411,7 +391,7 @@ Name: "()", Type: "QualifiedName", Value: "10"
 <li>
 <p>Return statements - Return statements at the end of a function call.</p>
 <p><em>Sample statement</em> -</p>
-<pre class=" language-java"><code class="prism  language-java"><span class="token keyword">return</span> <span class="token number">2</span><span class="token punctuation">;</span> 
+<pre class=" language-java"><code class="prism  language-java"><span class="token keyword">return</span> <span class="token number">2</span><span class="token punctuation">;</span>
 </code></pre>
 <p><em>Instrumentation Statement inserted</em> -</p>
 <pre><code>return a;
@@ -430,7 +410,7 @@ Name: "PathFindingOnSquaredGrid.random(int, double).a", Type: "SimpleName", Valu
  }
 </code></pre>
 <p><em>Instrumentation Statement inserted</em> -</p>
-<pre><code>public static void main(String[] args) 
+<pre><code>public static void main(String[] args)
 TemplateClass.instrum(389, "MethodDeclaration", new AP("SimpleName", "PathFindingOnSquaredGrid.main(String[]).args", args));
 </code></pre>
 <p><em>Resulting trace with details of Location, Statement type, Binding and variable value</em> -</p>
@@ -456,7 +436,7 @@ Name: "Integer.parseInt(String)", Type: "MethodInvocation", Value: ""
 Name: "PathFindingOnSquaredGrid.main(String[]).args", Type: "inner SimpleName", Value: "[Ljava.lang.String;@311d617d"
 Name: "", Type: " inner NumberLiteral", Value: "0"
 
-// This translates to gridSize = Integer.parseInt(args[0]). inner SimpleName is a type that is used to signify array access. 
+// This translates to gridSize = Integer.parseInt(args[0]). inner SimpleName is a type that is used to signify array access.
 </code></pre>
 </li>
 <li>
@@ -486,21 +466,21 @@ Name: "Node", Type: "ClassInstanceCreation", Value: "Node.Node(int, int)"
 Name: "PathFindingOnSquaredGrid.generateHValue(boolean[][], int, int, int, int, int, int, int, boolean, int).y", Type: "SimpleName", Value: "0"
 Name: "PathFindingOnSquaredGrid.generateHValue(boolean[][], int, int, int, int, int, int, int, boolean, int).x", Type: "SimpleName", Value: "0"
 
-This shows that an array is assigned a value new Node(y,x) 
+This shows that an array is assigned a value new Node(y,x)
 </code></pre>
 </li>
 </ol>
-<h5 id="compilation--execution-jvm-launcher">Compilation &amp; Execution (JVM Launcher)</h5>
+<h4 id="compilation--execution-jvm-launcher">Compilation &amp; Execution (JVM Launcher)</h4>
 <p>The launcher program is responsible for compiling and executing multiple instances of the client application (JVM instances) against multiple inputs.<br>
 This also receives IPC messages through the web socket server and stores them in a hash table. This is then dumped into files, which are available for viewing.<br>
 The launcher comprises of multiple components -</p>
-<h6 id="the-ant-builder--">1. The ANT builder -</h6>
+<h5 id="the-ant-builder--">1. The ANT builder -</h5>
 <p>This is responsible for compiling the source application (client), after adding instrumentation statements and generate <code>.class</code> files.</p>
 <p>The driver method in the AntBuilder class, under the launcher module is <code>compileAndLaunchJVM()</code>. This reads the <code>build.xml</code> config file from the source application<br>
 and builds the application.</p>
 <p>We use the <code>buildFinished()</code> hook to determine if the build completed successfully and launch the JVM from this method.</p>
 <p>On build failure, we log the error messages and abort as we cannot proceed further with execution.</p>
-<h6 id="the-jvm-launcher--">2. The JVM launcher -</h6>
+<h5 id="the-jvm-launcher--">2. The JVM launcher -</h5>
 <p>The <code>executeJava()</code> method under the AntBuilder class is responsible for invoking the JVM by reading the run configuration parameters. This method<br>
 runs a JVM instance for every parameter as mentioned in the <code>run.arguments</code> in the project configuration file.</p>
 <p>The JVM is initialized with details of the Main class, program arguments, class path and any dependent jars and started. This is done in the JVMLauncher class<br>
@@ -511,14 +491,14 @@ under the launcher module.</p>
 To enable IPC communication between the launcher program and JVM instances running code a <code>akka-websocket</code> connection is used.<br>
 Each new JVM instance requested connects to the server as a new client. The sever listens to <code>127.0.0.1:8000/instrumserver</code> for<br>
 data from the clients. The data accepted is JSON format.</p>
-<p>The server is responsible for building the hashtable and keeping a trace of all the instrumentation data received.  This means<br>
+<p>The server is responsible for building the hashtable and keeping a trace of all the instrumentation data received. This means<br>
 that each client needs to keep its own copy of the hastable and the trace. For this purpose <code>akka-actor</code> is used as a sink<br>
 for each client. A new actor instance will be created for each client and separate hastable and trace are maintained. <code>InstrumActor</code><br>
 object is used to keep a track of the various events that occur during the communication starting from <code>Init</code> till <code>Completed</code>.</p>
 <p>The <code>Flow</code> used groups the incoming data, and passes it to the method <code>parseJSONMessage(jsonString: String)</code> to parse each<br>
 JSON object obtained. <code>BindingData</code> class is used to de-serialize the JSON and provide convenience methods of easy printing.<br>
 During parsing each JSON is saved to the hashtable using <code>binding</code> of each variable as the unique identifier.<br>
-Also the original JSON is  saved to variable to be written to a tracefile later.</p>
+Also the original JSON is saved to variable to be written to a tracefile later.</p>
 <p>Method <code>writeData()</code> will be invoked when a client disconnects, ie. the JVM instance has finished execution of all the statements<br>
 in the code. At this point the hashtable and trace data is written into <code>.txt</code> files and saved in the folder <code>tracefiles</code>. Each file<br>
 will be time stamped. Hashtable data has the prefix <code>binding_</code> and trace data has the prefix <code>trace</code>.</p>
@@ -528,22 +508,22 @@ is done. It would be enough to make sure that the server is still running at all
 <p>This writes trace and binding files under <code>tracefiles</code> folder.</p>
 <h4 id="the-jvm-instance-client-1">The JVM Instance (Client)</h4>
 <p>This consists of the modified source with instrumented statements.</p>
-<h6 id="template-class">Template Class</h6>
+<h5 id="template-class">Template Class</h5>
 <p>This is a static java class that holds the <code>instrum()</code> method. Logging statements are added in the source application (client), which are invocations of this method.</p>
 <ul>
-<li><code>instrum(int lineNumber, String typeOfStatement, AP... args)</code>  - This method takes in a line number, type of statement and a set of arguments with details on the variables used in that statement.<br>
+<li><code>instrum(int lineNumber, String typeOfStatement, AP... args)</code> - This method takes in a line number, type of statement and a set of arguments with details on the variables used in that statement.<br>
 A JSON object is constructed and sent back to the launcher program through a web socket.</li>
 <li><code>WebSocket connect()</code> - This method is invoked when the TemplateClass is initialized, during the very first invocation of <code>instrum()</code>. This initializes a web socket to send messages to the launcher program.</li>
 <li><code>finalizeInstrum()</code> - This method is invoked prior to exiting the client application (the last statement in <code>main()</code>). This method disconnects the socket.</li>
 </ul>
-<h6 id="ap-class">AP Class</h6>
+<h5 id="ap-class">AP Class</h5>
 <p>Multiple instances of the AP class are passed as arguments to the <code>instrum()</code> method. This holds information about variables including the type, binding and the value of the variable, for every variable used in a statement.<br>
 Below is the structure of the AP class.</p>
 <pre class=" language-public"><code class="prism  language-public">    String type;
     String name;
     String value;
 </code></pre>
-<h4 id="results-trace--binding-files">Results (Trace &amp; Binding Files)</h4>
+<h2 id="results-trace--binding-files">Results (Trace &amp; Binding Files)</h2>
 <p>When execution completes, two files are created per execution instance (per input) and are stored under <code>tracefiles</code> folder.<br>
 The two files are created with names <code>trace_&lt;timestamp&gt;</code> and <code>bindings_&lt;timestamp&gt;</code>.</p>
 <p>The files have the below content and structure.</p>
@@ -553,21 +533,32 @@ This file gives detailed information of the type of statement, the line number a
 </ul>
 <pre><code>Line: 394, SeenAt: "VariableDeclaration"
 Name: "PathFindingOnSquaredGrid.main(String[]).probability", Type: "SimpleName", Value: "0.3"
+
 Name: "Double.Double.parseDouble(String)", Type: "MethodInvocation", Value: ""
+
 Name: "PathFindingOnSquaredGrid.main(String[]).args", Type: "inner SimpleName", Value: "[Ljava.lang.String;@311d617d"
+
 Name: "", Type: " inner NumberLiteral", Value: "1".
 ========
 Line: 16, SeenAt: "ForStatement"
 Name: "PathFindingOnSquaredGrid.random(int, double).i", Type: "SimpleName", Value: "0"
+
 Name: "PathFindingOnSquaredGrid.random(int, double).N", Type: "SimpleName", Value: "10"
 ========
+
 Line: 401, SeenAt: "MethodInvocation"
 Name: "PathFindingOnSquaredGrid.menu(int, double, int, int, int, int)", Type: "MethodInvocation", Value: ""
+
 Name: "PathFindingOnSquaredGrid.main(String[]).gridSize", Type: "args SimpleName", Value: "10"
+
 Name: "PathFindingOnSquaredGrid.main(String[]).probability", Type: "args SimpleName", Value: "0.3"
+
 Name: "PathFindingOnSquaredGrid.main(String[]).y1", Type: "args SimpleName", Value: "0"
+
 Name: "PathFindingOnSquaredGrid.main(String[]).x1", Type: "args SimpleName", Value: "0"
+
 Name: "PathFindingOnSquaredGrid.main(String[]).y2", Type: "args SimpleName", Value: "0"
+
 Name: "PathFindingOnSquaredGrid.main(String[]).x2", Type: "args SimpleName", Value: "0"
 ========
 </code></pre>
@@ -577,14 +568,20 @@ This file mentions all instances of where a variable is used, with details of it
 </ul>
 <pre><code>========= "PathFindingOnSquaredGrid.menu(int, double, int, int, int, int).n" =========
 Name: "PathFindingOnSquaredGrid.menu(int, double, int, int, int, int).n", Type: "SimpleName", Value: "10", Line: 69, seenAt: "MethodDeclaration"
+
 Name: "PathFindingOnSquaredGrid.menu(int, double, int, int, int, int).n", Type: "args SimpleName", Value: "10", Line: 73, seenAt: "VariableDeclaration"
+
 Name: "PathFindingOnSquaredGrid.menu(int, double, int, int, int, int).n", Type: "args SimpleName", Value: "10", Line: 86, seenAt: "MethodInvocation"
+
 Name: "PathFindingOnSquaredGrid.menu(int, double, int, int, int, int).n", Type: "args SimpleName", Value: "10", Line: 118, seenAt: "MethodInvocation"
+
 Name: "PathFindingOnSquaredGrid.menu(int, double, int, int, int, int).n", Type: "args SimpleName", Value: "10", Line: 143, seenAt: "MethodInvocation"
 
 ========= "PathFindingOnSquaredGrid.main(String[]).y1" =========
 Name: "PathFindingOnSquaredGrid.main(String[]).y1", Type: "SimpleName", Value: "0", Line: 396, seenAt: "VariableDeclaration"
+
 Name: "PathFindingOnSquaredGrid.main(String[]).y1", Type: "args SimpleName", Value: "0", Line: 400, seenAt: "MethodInvocation"
+
 Name: "PathFindingOnSquaredGrid.main(String[]).y1", Type: "args SimpleName", Value: "0", Line: 401, seenAt: "MethodInvocation"
 </code></pre>
 <p>ServerLaunch Output</p>
@@ -638,7 +635,7 @@ parsing buildfile jar:file:/home/sherryl/.cache/coursier/v1/https/repo1.maven.or
     [javac] '-sourcepath'
     [javac] '/media/01D3908E9C0056A0/code/IdeaProjects/sherryl_mathewgeorge_courseproject/projects/project2/src'
     [javac] '-g:none'
-    [javac] 
+    [javac]
     [javac] The ' characters around the executable and arguments are
     [javac] not part of the command.
     [javac] Files to be compiled:
@@ -658,12 +655,12 @@ BUILD FINISHED
 [JDI: Sending Command(id=12) JDWP.VirtualMachine.Dispose]
 [JDI: Target VM interface thread exiting]
 
-Starting Matrix: 
+Starting Matrix:
  5 64 51
  50 81 36
  49 59 55
 
-Rotated Matrix: 
+Rotated Matrix:
  51 36 55
  64 81 59
  5 50 49
