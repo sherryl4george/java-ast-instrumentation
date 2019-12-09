@@ -57,7 +57,7 @@ object ExpressionUtils extends LazyLogging{
      * @param extra
      */
     def recurseExpressionHelper(expression: Expression, extra: String = ""): Unit = {
-      logger.info("Recurse Expression Helper on expression => " + expression.toString)
+      logger.info("Recurse Expression Helper on expression => " + expression)
       expression match {
         case _: ArrayCreation => {}
 
