@@ -23,8 +23,11 @@ The project has two main files:
 2. InstrumLauch - Launches the instrumentation for a selected project
 
 Below are the steps to be followed to run the project in Intellij:
+
 1. Run the file `ServerLauch.scala`. This should start a server at `127.0.0.1:8080`. Make sure that this port is free  or else the server won't start. This file should be run first and has to be started only once for running any number of instrumentations. Donot close the terminal window in which this file is run
+
 2. Run the file `InstrumLaunch.scala` to run the instrumentation. You will be provided with a list of project configuration files available to the instrumenter. You can choose which project to run. Running the instrumenter for more than once on thesame source file may cause unexpected results. This project already has a `Pathfinder` and `Matrix Rotation` program which can be used for test purposes. 
+
 3. After each run two timestamped files will be found in the `tracefiles` directory in the project root. The file with `binding_` will have the formatted data of the hashtable for each variable and `trace_` will have running data of eachinstrum statement executed.
 
 `sbt` command line can also be used to run the project. Running the project from the root will provide you with option to select which class has to run. Run both the files in two separate terminals in the order described above.
