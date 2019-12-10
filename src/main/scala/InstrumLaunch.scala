@@ -104,6 +104,9 @@ object InstrumLaunch extends App with LazyLogging {
     val oldSrc = new File(Paths.get(src.getParent, "oldSrc").toUri)
     FileUtils.forceMkdir(oldSrc)
 
+    //Move current source to old sources
+    FileUtils.copyDirectory(new File(sources), oldSrc)
+
     //Copy jars used by instrumenter before proceeding
     FileUtils.copyDirectory(new File(jarsDirSrc), new File(jarsDirDest), true)
 
@@ -214,8 +217,8 @@ object InstrumLaunch extends App with LazyLogging {
     val completeRewriter = new FinalConverter(finalCU).startInstrum()
     val completeCode = FileHelper.getSourceCodeAsString(completeRewriter, finalCode)
 
-    //Move current source to old sources and rewrite the sources with the instrumented source file.
-    FileUtils.copyFileToDirectory(file, oldSrc)
+    // Rewrite the sources with the instrumented source file.
+//    FileUtils.copyFileToDirectory(file, oldSrc)
     FileHelper.writeFile(completeCode, fileName)
     logger.trace("Final Instrumented code " + completeCode)
 
