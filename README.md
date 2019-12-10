@@ -16,7 +16,7 @@ The requirements of this project are:
 1. JAVA SDK 11 or higher
 2. Scala 2.13 or above
 
-**Note:** The project is developed and tested on a Unix based OS. 
+**Note:** The project is developed and tested on a Linux based OS(Ubuntu to be exact).
 ## How to run
 The project has two main files:
 
@@ -34,6 +34,7 @@ Below are the steps to be followed to run the project in Intellij:
 
 `sbt` command line can also be used to run the project. Running the project from the root will provide you with option to select which class has to run. Run both the files in two separate terminals in the order described above.
 
+**Note** In case you encounter an error during compilation regarding missing dependencis of `com.sun.jdi.*` make sure your project is set to use JAVA 11.
 To run from command line use:
 `sbt clean compile run`
 
@@ -50,3 +51,7 @@ To test from command line use:
 
 ## Detailed Documentation
 Detailed design documentation can be found [here](report/report.pdf)
+
+## Known Issues
+1. The code is not tested on Mac OS. We tried testing on Mac based VM and the JVM launch failed and no fix has been found yet.
+2. There has been an issue with launching JVM from code when running a Windows OS. This issue has been fixed.
