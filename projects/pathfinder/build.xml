@@ -1,0 +1,12 @@
+<project default="compile">
+    <target name="compile">
+        <mkdir dir="target"/>
+        <javac srcdir="src" destdir="target">
+		<classpath>
+		        <pathelement path="jars/nv-websocket-client-2.9.jar"/>
+			<pathelement path="jars/json-20190722.jar"/>
+			<pathelement path="jars/stdlib.jar"/>
+	    </classpath>
+	</javac>
+    </target>
+</project>
