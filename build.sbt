@@ -31,7 +31,10 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % "2.6.0",
 
   // https://mvnrepository.com/artifact/com.typesafe.play/play-json
-  "com.typesafe.play" %% "play-json" % "2.8.0"
+  "com.typesafe.play" %% "play-json" % "2.8.0",
+
+  "org.apache.commons" % "commons-lang3" % "3.9"
+
 )
 
 

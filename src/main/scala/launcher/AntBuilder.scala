@@ -2,8 +2,10 @@ package launcher
 
 import java.nio.file.Paths
 import java.util
+
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
+import org.apache.commons.lang3.SystemUtils
 import org.apache.tools.ant.{BuildEvent, DefaultLogger, Project, ProjectHelper}
 import parser.utils.FileHelper
 
@@ -39,17 +41,23 @@ case class AntBuilder(config: Config) extends LazyLogging{
     def executeJava(): Unit = {
 
       //Read appropriate values from config to invoke the JVM launch.
+      var separator = ""
+      if(SystemUtils.IS_OS_WINDOWS)
+        separator = ";"
+      else
+        separator = ":"
+
       val root = config.getString("compile.root")
       val targetDir = Paths.get(root,config.getString("compile.targetDir")).toString
       val jars = Paths.get(root,config.getString("compile.jarFolder")).toString
-      val jarList = FileHelper.getFilesByExtension(jars,"jar").mkString(":")
+      val jarList = FileHelper.getFilesByExtension(jars,"jar").mkString(separator)
       val main = config.getString("run.mainClass")
 
       //Invoke JVM on each input.
       val totalRuns = config.getAnyRefList("run.arguments").size()
       logger.info("Total number of inputs to run against - " + totalRuns)
 
-      config.getAnyRefList("run.arguments").forEach(x => invoke(targetDir,jarList,main,x.asInstanceOf[util.ArrayList[String]].asScala.toList.mkString(" ")))
+      config.getAnyRefList("run.arguments").forEach(x => invoke(targetDir,jarList,main,separator,x.asInstanceOf[util.ArrayList[String]].asScala.toList.mkString(" ")))
       logger.debug("Instrumented code executed on all inputs!")
     }
 
@@ -60,12 +68,12 @@ case class AntBuilder(config: Config) extends LazyLogging{
      * @param mainClass
      * @param argList
     0     */
-    def invoke(target:String, jarList: String, mainClass : String, argList : String) = {
+    def invoke(target:String, jarList: String, mainClass : String, separator: String, argList : String) = {
       logger.info("Invoking JVM with argument set -> " + argList)
       //Create arguments for invoking the JVM
       val map = Map(
         "main" -> (mainClass + " " + argList),
-        "options" -> ("-classpath " + target + ":" + jarList)
+        "options" -> ("-classpath " + target + separator + jarList)
       )
 
       //Launch the JVM

@@ -11,6 +11,26 @@ public class AP {
         this.name = name;
         this.value = Integer.toString(value);
     }
+    public AP(String type, String name, float value){
+        this.type = type;
+        this.name = name;
+        this.value = Float.toString(value);
+    }
+    public AP(String type, String name, byte value){
+        this.type = type;
+        this.name = name;
+        this.value = Byte.toString(value);
+    }
+    public AP(String type, String name, short value){
+        this.type = type;
+        this.name = name;
+        this.value = Short.toString(value);
+    }
+    public AP(String type, String name, long value){
+        this.type = type;
+        this.name = name;
+        this.value = Long.toString(value);
+    }
     public AP(String type, String name, char value){
         this.type = type;
         this.name = name;
