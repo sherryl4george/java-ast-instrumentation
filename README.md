@@ -53,5 +53,5 @@ To test from command line use:
 Detailed design documentation can be found [here](report/report.pdf)
 
 ## Known Issues
-1. The code is not tested on Mac OS. We tried testing on Mac based VM and the JVM launch failed and no fix has been found yet.
-2. There has been an issue with launching JVM from code when running a Windows OS. This issue has been fixed.
+1. The code is not tested on a Mac OS. We tried testing on a Mac based VM and the JVM launch failed with a "VM failed to initialize error". We could not find a solution for this as we do not own a MAC.
+2. There was an issue with launching the JVM from the code when running on a Windows OS. We figured out that this was due to windows using ; in the class lib path as opposed to a : on LINUX. This has been fixed. 
