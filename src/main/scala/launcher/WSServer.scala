@@ -76,7 +76,7 @@ class InstrumActor extends Actor with LazyLogging{
           val name = (dataJson \ "name").get
           val value = (dataJson \ "value").get
           val bindingData = new BindingData(name.toString, value.toString, itemType.toString, line.toString, seenAt.toString)
-          if(name.toString.length > 2 ) {
+          if(name.toString.length > 2 && !itemType.toString().replace("\"", "").equals("MethodInvocation")) {
             val tempData: List[BindingData] = dataStore.get(name.toString).getOrElse(List.empty[BindingData])
             dataStore.put(name.toString(), tempData :+ bindingData)
           }
