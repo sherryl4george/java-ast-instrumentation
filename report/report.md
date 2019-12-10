@@ -109,13 +109,22 @@ To add a new project for instrumentation perform the below steps:
 1. Make sure your project is Ant buildable.
 1. Add a configuration file to the folder `config/instrum`. This a configuration file and should have the extension `.conf`.
    Each parameter in the configuration file is shown below: All parameters are mandatory and the program cannot procced without
-   setting each of the below parameters 1. rootRelativetoInstrumDir - Set this to `true` if the new project foler is saved inside the instrumentation project
-   directory. Else set this to `false`. 2. root - Specify path to the root of your project. If you set `true` for `rootRelativetoInstrumDir` this path should be
-   relative else you need an absolute path to be specified. 3. srcDir - Specify path to top level directory which has `.java` code files. This is to be set relatively to the `root`
-   parameter 4. targetDir - Specify where to find the `.class` files produced by the Ant builder. This is to be set relatively to the `root`
-   parameter 5. jarFolder - Specify the folder where your `jars` are saved. This should be the folder part of your `classpath` specification
-   in the `build.xml`. This is to be set relatively to the `root` parameter. 6. buildFile - Specify where your `build.xml` file is. This is to be set relatively to the `root` parameter. 7. mainClass - Give the qualified name including the package structure of your main class 8. arguments - This is a list of list. The inner list is separated by commas and each inner list consists of the arguments
-   to be passed to the instrumented program.
+   setting each of the below parameters
+
+   1. rootRelativetoInstrumDir - Set this to `true` if the new project foler is saved inside the instrumentation project
+      directory. Else set this to `false`.
+   2. root - Specify path to the root of your project. If you set `true` for `rootRelativetoInstrumDir` this path should be
+      relative else you need an absolute path to be specified.
+   3. srcDir - Specify path to top level directory which has `.java` code files. This is to be set relatively to the `root`
+      parameter
+   4. targetDir - Specify where to find the `.class` files produced by the Ant builder. This is to be set relatively to the `root`
+      parameter
+   5. jarFolder - Specify the folder where your `jars` are saved. This should be the folder part of your `classpath` specification
+      in the `build.xml`. This is to be set relatively to the `root` parameter.
+   6. buildFile - Specify where your `build.xml` file is. This is to be set relatively to the `root` parameter.
+   7. mainClass - Give the qualified name including the package structure of your main class
+   8. arguments - This is a list of list. The inner list is separated by commas and each inner list consists of the arguments
+      to be passed to the instrumented program.
 
    See for a sample `pathfinder.conf` file for a project saved inside the instrumentation project in the path `projects/project1`
 
@@ -434,7 +443,9 @@ The visitors are under the visitors module and the instrumentation is done in In
    Name: "PathFindingOnSquaredGrid.main(String[]).args", Type: "inner SimpleName", Value: "[Ljava.lang.String;@311d617d"
    Name: "", Type: " inner NumberLiteral", Value: "0"
 
-   // This translates to gridSize = Integer.parseInt(args[0]). inner SimpleName is a type that is used to signify array access.
+   // This translates to gridSize = Integer.parseInt(args[0]).
+   // "inner SimpleName" is a type that is used to signify the components in an array, i.e. the array name and array indices.
+   // In a method invocation, "args" signifies the parameters used in invoking the method.
    ```
 
 5. Expression statements - We handle instrumentation of a lot of expression statement constructs as provided by the Java language. Below is a list of constructs that we handle in our instrumentation.
