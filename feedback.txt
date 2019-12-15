@@ -1,0 +1,7 @@
+Dear Maithreyi and Sherryl:
+this is an impressive project submission! You put a lot of work in it and it shows! Your documentation is very well written. I like how you worked your way around partitioning the project into physical modules with clearly defined interfaces. You used actors with the framework Akka, nice! There are some coding issues like your use of filtering where the check exist will suffice, for example, .filter(_._2.contains("ForStatement")).size > 0.
+
+Other than that, it is a well-done project! You got the full 25% plus 1% for Maithreyi as the project lead. Congratulations!
+
+Thank you,
+Mark
